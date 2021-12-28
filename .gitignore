@@ -128,3 +128,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Shapefiles #
+##############
+*.dbf
+*.fix
+*.prj
+*.qix
+*.shp
+*.shx
