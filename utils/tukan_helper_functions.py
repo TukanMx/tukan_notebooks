@@ -7,7 +7,7 @@ import os
 import sys
 import matplotlib.pyplot as plt
 
-token = ""  # TYOUR TOKEN goes here
+token = "2f5eb1e4eb857b5952ca81b7818badb6048f1250"  # TYOUR TOKEN goes here
 url = 'http://api.tukanmx.com/v1/retrieve/'
 
 headers = {
