@@ -7,7 +7,7 @@ import os
 import sys
 import matplotlib.pyplot as plt
 
-token = ""  # TYOUR TOKEN goes here
+token = os.environ.get('tukan_api_token')  # TYOUR TOKEN goes here
 url = 'http://api.tukanmx.com/v1/retrieve/'
 
 headers = {
