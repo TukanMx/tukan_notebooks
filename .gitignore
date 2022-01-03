@@ -1,4 +1,6 @@
-nb_venv/*
+DataEnv2/*
+nb_env/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -137,3 +139,7 @@ dmypy.json
 *.qix
 *.shp
 *.shx
+
+# Images
+############
+*.png
