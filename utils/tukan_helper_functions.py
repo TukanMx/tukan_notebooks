@@ -68,6 +68,30 @@ def get_tukan_api_request(payload):
     })
 
 
+def get_table_dictionary(table_id):
+    '''
+    This function helps on making getting a data table's indicator dictionary.
+
+    Args:
+     - table_id (str): a dictionary with the table_id of the data table.
+    '''
+    global url
+    global headers
+
+    payload = {
+        "type": "variable_dict",
+        "data_table": table_id,
+        "operation": "all"
+    }
+
+    response = requests.request(
+        "POST", url, headers=headers, data=json.dumps(payload))
+    var_dict = pd.DataFrame(
+        response.json()[table_id + '_variables_dictionary'])
+
+    return(var_dict)
+
+
 # -----
 
 # Load the Roboto font and stylesheet
