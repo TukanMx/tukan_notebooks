@@ -109,6 +109,26 @@ for x in os.listdir(path):
         except:
             x
 
+for x in os.listdir(path):
+    if x.split(".")[-1] == "ttf":
+        fm.fontManager.addfont(path + "/" + x)
+        try:
+            fm.FontProperties(weight=x.split(
+                "-")[-1].split(".")[0].lower(), fname=x)
+        except:
+            x
+
+path = [x for x in sys.path if "assets" in x][0] + "\\fonts\\Dosis\\"
+
+for x in os.listdir(path):
+    if x.split(".")[-1] == "ttf":
+        fm.fontManager.addfont(path + "/" + x)
+        try:
+            fm.FontProperties(weight=x.split(
+                "-")[-1].split(".")[0].lower(), fname=x)
+        except:
+            x
+
 
 # ----
 
