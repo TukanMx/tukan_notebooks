@@ -2,35 +2,98 @@
 # ----------------------------------
 # We load fonts and stylesheet.
 # ----------------------------------
+from tukan_helper_functions import get_tukan_api_request
+import datetime
+import matplotlib.dates as mdates
+import matplotlib.ticker as ticker
+from highlight_text import ax_text
+from dateutil.relativedelta import relativedelta
+import matplotlib as mpl
+from matplotlib import image
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from urllib import response
+import sys
+from distutils import core
+import os
+
+
 module_path = os.path.abspath(os.path.join('../../'))
 if module_path not in sys.path:
     sys.path.append(module_path+"\\utils")
     sys.path.append(module_path+"\\assets")
 
-from tukan_helper_functions import get_tukan_api_request
-import sys
-import os
-from urllib import response
-import pandas as pd
-import numpy as np
 
 # For creating cool charts :)
-import matplotlib.pyplot as plt
-from matplotlib import image
-import matplotlib as mpl
-from dateutil.relativedelta import relativedelta
-from highlight_text import ax_text
-import matplotlib.ticker as ticker
-import matplotlib.dates as mdates
-from highlight_text import ax_text
-import datetime
 plt.style.use(module_path + '\\utils\\tukan_style.mpl')
 
-
+# %%
 # ----------------------------------
-# We load the get_tukan_api_request to query TUKAN's API
+# We load the product_mapping_inegi csv file to map the products to the INEGI category
 # ----------------------------------
 
+
+def map_tukan_inegi_products(from_d="2019-01-01"):
+
+    # Map to match INEGI classifications
+    tukan_inegi_map = pd.read_csv(
+        "product_mapping_inegi.csv", encoding="utf-8")
+    tukan_inegi_map.drop(["weight"], axis=1, inplace=True)
+
+    weight_payload = {
+        "type": "data_table",
+        "operation": "sum",
+        "language": "en",
+        "group_by": [
+            "product"
+        ],
+        "categories": {
+            "product": "all"
+        },
+        "request": [
+            {
+                "table": "mex_inegi_inpc_product_weights",
+                "variables": "all"
+            }
+        ]
+    }
+
+    cpi_payload = {
+        "type": "data_table",
+        "operation": "sum",
+        "language": "en",
+        "group_by": [
+            "product"
+        ],
+        "categories": {
+            "product": "all"
+        },
+        "request": [
+            {
+                "table": "mex_inegi_inpc_product_monthly",
+                "variables": [
+                    "c572db59b8cd109"
+                ]
+            }
+        ],
+        "from": from_d
+    }
+
+    response_weight = get_tukan_api_request(weight_payload)
+    cpi_response = get_tukan_api_request(cpi_payload)
+
+    weight_data = response_weight["data"]
+    cpi_data = cpi_response["data"]
+
+    weight_data.drop("date", axis=1, inplace=True)
+
+    final_data = pd.merge(cpi_data, weight_data, how="left", on=[
+                          "product", "product__ref"])
+    final_data = pd.merge(final_data, tukan_inegi_map,
+                          how="left", on="product__ref")
+
+    return final_data
 
 # ------------------------------------------------------------------
 #
@@ -45,8 +108,8 @@ plt.style.use(module_path + '\\utils\\tukan_style.mpl')
 #
 # ------------------------------------------------------------------
 
-def plot_chart_1(from_d="2000-01-01"):
 
+def plot_chart_1(from_d="2000-01-01"):
 
     payload = {
         "type": "data_table",
@@ -177,13 +240,12 @@ def plot_chart_2(from_d="2019-01-01"):
 
     cpi_data_underlying = pd.merge(
         cpi_data, underlying_weights, how="right", on="product__ref")
-    cpi_data_underlying.loc[:, "cpi_under_cont"] = [
-        x*y for x, y in zip(cpi_data_underlying["c572db59b8cd109"], cpi_data_underlying["5993e5e787e4259"])]
+
     cpi_data_underlying.loc[:, "cpi_under"] = [
         x*y for x, y in zip(cpi_data_underlying["c572db59b8cd109"], cpi_data_underlying["2dac8b4b2fc8037"])]
 
     cpi_data_underlying = cpi_data_underlying.groupby(
-        ["date"]).sum(["cpi_under_cont", "cpi_under"]).reset_index()
+        ["date"]).sum(["cpi_under"]).reset_index()
 
     cpi_data_underlying["lag_under"] = cpi_data_underlying["cpi_under"].shift(
         12)
@@ -204,13 +266,12 @@ def plot_chart_2(from_d="2019-01-01"):
 
     cpi_data_non_underlying = pd.merge(
         cpi_data, non_underlying_weights, how="right", on="product__ref")
-    cpi_data_non_underlying.loc[:, "cpi_non_under_cont"] = [
-        x*y for x, y in zip(cpi_data_non_underlying["c572db59b8cd109"], cpi_data_non_underlying["5993e5e787e4259"])]
+
     cpi_data_non_underlying.loc[:, "cpi_non_under"] = [
         x*y for x, y in zip(cpi_data_non_underlying["c572db59b8cd109"], cpi_data_non_underlying["a5a09b8e3b7cbb5"])]
 
     cpi_data_non_underlying = cpi_data_non_underlying.groupby(
-        ["date"]).sum(["cpi_non_under_cont", "cpi_non_under"]).reset_index()
+        ["date"]).sum(["cpi_non_under"]).reset_index()
 
     cpi_data_non_underlying["lag_non_under"] = cpi_data_non_underlying["cpi_non_under"].shift(
         12)
@@ -259,12 +320,593 @@ def plot_chart_2(from_d="2019-01-01"):
         transparent=False,
     )
 
+
+# %%
+
+# ------------------------------------------------------------------
+#
+# CHART 3: CORE INFLATION SUB-INDEX
+#
+# ------------------------------------------------------------------
+
+def plot_chart_3(from_d="2019-01-01"):
+
+    data = map_tukan_inegi_products(from_d)
+
+    core_data = data[data["2dac8b4b2fc8037"] != 0].reset_index(drop=True)
+    core_data.dropna(inplace=True)
+    core_data.loc[:, "index_weighted"] = core_data["c572db59b8cd109"] * \
+        core_data["2dac8b4b2fc8037"]
+
+    aux_weights = core_data.groupby(["date", "primary"])[
+        "2dac8b4b2fc8037"].sum().reset_index()
+    aux_weights.drop(["date"], axis=1, inplace=True)
+    aux_weights.drop_duplicates(inplace=True)
+    aux_weights.rename(columns={"2dac8b4b2fc8037": "rel_weight"}, inplace=True)
+
+    core_data = core_data.groupby(["date", "primary"])[
+        "index_weighted"].sum().reset_index()
+
+    core_data = pd.merge(core_data, aux_weights, on="primary", how="left")
+
+    core_data.loc[:, "12_m_lag"] = core_data.groupby(
+        ["primary", "rel_weight"])["index_weighted"].shift(12)
+    core_data.loc[:, "1_m_lag"] = core_data.groupby(
+        ["primary", "rel_weight"])["index_weighted"].shift(1)
+    core_data.loc[:, "yoy_change"] = core_data["index_weighted"] / \
+        core_data["12_m_lag"] - 1
+    core_data.loc[:, "mom_change"] = core_data["index_weighted"] / \
+        core_data["1_m_lag"] - 1
+
+    # Sort subindex
+    sort_index = core_data.sort_values(by="rel_weight", ascending=False)
+
+    cmap = mpl.cm.get_cmap(
+        "GnBu_r", sort_index[["primary"]].drop_duplicates().shape[0] + 4)
+
+    yoy_data = core_data.dropna()
+
+    X_min = yoy_data["date"].min()
+    X_max = yoy_data["date"].max()
+
+    fig = plt.figure(figsize=(8, 3), dpi=200)
+
+    ax = plt.subplot(111)
+
+    sub_indices = list(sort_index["primary"].unique())
+
+    for index, sub_index in enumerate(sub_indices):
+        plot_data_aux = yoy_data[yoy_data["primary"] == sub_index].copy()
+        ax.plot(plot_data_aux["date"], plot_data_aux["yoy_change"],
+                marker="o", markevery=[-1], color=cmap(index), mec="white", ms=5)
+        Y_end = plot_data_aux["yoy_change"].iloc[-1]
+        weight_end = plot_data_aux["rel_weight"].iloc[-1]
+        ax_text(x=X_max + datetime.timedelta(15), y=Y_end + 0.001,
+                s=f"<{sub_index}>",
+                highlight_textprops=[{"color": cmap(index)}],
+                ax=ax, weight="bold", font="Dosis", ha="left", size=7.5)
+
+    ax.set_xlim(X_min, X_max + relativedelta(months=1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b-%Y"))
+    ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
+    if yoy_data["yoy_change"].min() < 0:
+        ax.hlines(0, X_min, X_max, ls="--", color="black", lw=0.75)
+    else:
+        ax.set_ylim(0)
+
+    plt.savefig(
+        "plots/core_subindices.svg",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+
+    )
+
+# %%
+
+# ------------------------------------------------------------------
+#
+# CHART 4: NON-CORE INFLATION SUB-INDEX
+#
+# ------------------------------------------------------------------
+
+
+def plot_chart_4(from_d="2019-01-01"):
+
+    data = map_tukan_inegi_products(from_d)
+
+    core_data = data[data["a5a09b8e3b7cbb5"] != 0].reset_index(drop=True)
+    core_data.dropna(inplace=True)
+    core_data.loc[:, "index_weighted"] = core_data["c572db59b8cd109"] * \
+        core_data["a5a09b8e3b7cbb5"]
+
+    aux_weights = core_data.groupby(["date", "primary"])[
+        "a5a09b8e3b7cbb5"].sum().reset_index()
+    aux_weights.drop(["date"], axis=1, inplace=True)
+    aux_weights.drop_duplicates(inplace=True)
+    aux_weights.rename(columns={"a5a09b8e3b7cbb5": "rel_weight"}, inplace=True)
+
+    core_data = core_data.groupby(["date", "primary"])[
+        "index_weighted"].sum().reset_index()
+
+    core_data = pd.merge(core_data, aux_weights, on="primary", how="left")
+
+    core_data.loc[:, "12_m_lag"] = core_data.groupby(
+        ["primary", "rel_weight"])["index_weighted"].shift(12)
+    core_data.loc[:, "1_m_lag"] = core_data.groupby(
+        ["primary", "rel_weight"])["index_weighted"].shift(1)
+    core_data.loc[:, "yoy_change"] = core_data["index_weighted"] / \
+        core_data["12_m_lag"] - 1
+    core_data.loc[:, "mom_change"] = core_data["index_weighted"] / \
+        core_data["1_m_lag"] - 1
+
+    # Sort subindex
+    sort_index = core_data.sort_values(by="rel_weight", ascending=False)
+
+    cmap = mpl.cm.get_cmap(
+        "GnBu_r", sort_index[["primary"]].drop_duplicates().shape[0] + 3)
+
+    yoy_data = core_data.dropna()
+
+    X_min = yoy_data["date"].min()
+    X_max = yoy_data["date"].max()
+
+    fig = plt.figure(figsize=(8, 3), dpi=200)
+
+    ax = plt.subplot(111)
+
+    sub_indices = list(sort_index["primary"].unique())
+
+    for index, sub_index in enumerate(sub_indices):
+        plot_data_aux = yoy_data[yoy_data["primary"] == sub_index].copy()
+        ax.plot(plot_data_aux["date"], plot_data_aux["yoy_change"],
+                marker="o", markevery=[-1], color=cmap(index), mec="white", ms=5)
+        Y_end = plot_data_aux["yoy_change"].iloc[-1]
+        weight_end = plot_data_aux["rel_weight"].iloc[-1]
+        ax_text(x=X_max + datetime.timedelta(15), y=Y_end + 0.001,
+                s=f"<{sub_index}>",
+                highlight_textprops=[{"color": cmap(index)}],
+                ax=ax, weight="bold", font="Dosis", ha="left", size=7.5)
+
+    ax.set_xlim(X_min, X_max + relativedelta(months=1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b-%Y"))
+    ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
+
+    if yoy_data["yoy_change"].min() < 0:
+        ax.hlines(0, X_min, X_max, ls="--", color="black", lw=0.75)
+    else:
+        ax.set_ylim(0)
+
+    plt.savefig(
+        "plots/non_core_subindices.svg",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )
+
+
+# ------------------------------------------------------------------
+#
+# CHART 5: Top 10 Products with highest contribution to non-core inflation
+#
+# ------------------------------------------------------------------
+
+def plot_chart_5(from_d="2020-01-01"):
+
+    data = map_tukan_inegi_products(from_d)
+
+    core_data = data[data["a5a09b8e3b7cbb5"] != 0].reset_index(drop=True)
+    core_data.dropna(inplace=True)
+    core_data.loc[:, "index_weighted"] = core_data["c572db59b8cd109"] * \
+        core_data["a5a09b8e3b7cbb5"]
+
+    core_data.loc[:, "12_m_lag"] = core_data.groupby(
+        ["product", "primary"])["index_weighted"].shift(12)
+    core_data.loc[:, "1_m_lag"] = core_data.groupby(
+        ["product", "primary"])["index_weighted"].shift(1)
+    core_data.loc[:, "yoy_change"] = core_data["index_weighted"] - \
+        core_data["12_m_lag"]
+    core_data.loc[:, "mom_change"] = core_data["index_weighted"] - \
+        core_data["1_m_lag"]
+
+    core_inflation = core_data.groupby(
+        ["date"])[["yoy_change", "mom_change"]].sum()
+    core_inflation.reset_index(inplace=True)
+    core_inflation.rename(
+        columns={"yoy_change": "yoy_core", "mom_change": "mom_core"}, inplace=True)
+
+    core_data = pd.merge(core_data, core_inflation, how="left", on="date")
+    core_data.loc[:, "yoy_contribution"] = core_data["yoy_change"] / \
+        core_data["yoy_core"]
+
+    core_data = core_data[core_data["date"] == core_data["date"].max()]
+    core_data = core_data.sort_values(
+        by="yoy_contribution", ascending=False).head(9)
+
+    # True YoY and MoM Change
+    core_data.loc[:, "yoy_change"] = core_data["yoy_change"] / \
+        core_data["12_m_lag"]
+    core_data.loc[:, "mom_change"] = core_data["mom_change"] / \
+        core_data["1_m_lag"]
+
+    top_10 = list(core_data["product__ref"])
+
+    core_data.reset_index(drop=True, inplace=True)
+
+    core_data = core_data[["product", "primary",
+                           "yoy_change", "mom_change", "yoy_contribution"]]
+    core_data.replace({"product": {
+                      "Electric power transmission services": "Electric power trans."}}, inplace=True)
+    core_data.set_index("product", inplace=True)
+    core_data.columns = ["Group", "YoY %", "MoM %", "Cont. to\nYoY%"]
+
+    fig = plt.figure(figsize=(6.5, 6), dpi=200)
+
+    ax = fig.add_subplot(111)
+    ax.set_ylim(-8.25, 1.5)
+    ax.set_xlim(-0.75, 9.05)
+    ax.set_axis_off()
+
+    for row, x in enumerate(core_data.values):
+        ax.annotate(
+            core_data.index[row],
+            xy=(-0.15, -1*row),
+            xycoords="data",
+            xytext=(0, 0),
+            textcoords="offset points",
+            color="black",
+            size=8,
+            va="center",
+            ha="left",
+            weight="bold"
+        )
+        column_aux = 0
+        columns_auxes = []
+        for column, label in enumerate(x):
+            if isinstance(label, str):
+                label_x = label
+            else:
+                label_x = f"{label:.1%}"
+            if column == 0:
+                column_x = 3
+            elif column == 1:
+                column_aux = 2
+            else:
+                column_x = 1.5
+            column_aux = column_aux + column_x
+            ax.annotate(
+                label_x,
+                xy=(column_aux, -1*row),
+                xycoords="data",
+                xytext=(10, 1),
+                textcoords="offset points",
+                color="black",
+                size=7.5,
+                va="center",
+                ha="center"
+            )
+            if row == 8:
+                color = "black"
+                linewidth = 0.85
+            else:
+                color = "lightgrey"
+                linewidth = 0.5
+            ax.plot([-0.75, 9.15], [-1*row - .25, -1*row - .25],
+                    color=color, linewidth=linewidth, ls="-")
+            columns_auxes.append(column_aux)
+
+    for index, column_aux in enumerate(columns_auxes):
+        col_label = core_data.columns[index]
+        ax.annotate(
+            col_label,
+            xy=(column_aux, 1.25),
+            xycoords="data",
+            xytext=(10, 2),
+            textcoords="offset points",
+            color="white",
+            size=8,
+            va="top",
+            ha="center",
+            weight="bold"
+        )
+
+    ax.plot([1.9, 8.15], [.75, .75], color="black", linewidth=0.85)
+
+    ax.add_patch(mpl.patches.Rectangle((1.9, .75), width=7.15, height=0.8, linewidth=1,
+                                       color='#2B5AA5', fill=True))
+
+    plt.savefig(
+        "plots/non_core_top_10.svg",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )
+
+    cpi_payload = {
+        "type": "data_table",
+        "operation": "yoy_growth_rel",
+        "language": "en",
+        "group_by": [
+            "product"
+        ],
+        "categories": {
+            "product": top_10
+        },
+        "request": [
+            {
+                "table": "mex_inegi_inpc_product_monthly",
+                "variables": [
+                    "c572db59b8cd109"
+                ]
+            }
+        ],
+        "from": "2010-01-01"
+    }
+
+    cpi_data = get_tukan_api_request(cpi_payload)
+    cpi_data = cpi_data["data"]
+    cpi_data.replace({"product": {
+                     "Electric power transmission services": "Electric power trans."}}, inplace=True)
+
+    cmap = mpl.cm.get_cmap(
+        "GnBu_r", 5)
+
+    for index, x in enumerate(top_10):
+        fig = plt.figure(figsize=(3, 1.5), dpi=200)
+        ax = plt.subplot(111)
+        aux_aux_df = cpi_data[cpi_data["product__ref"] == x]
+        product = aux_aux_df["product"].iloc[0]
+        ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
+        ax.plot(aux_aux_df["date"], aux_aux_df["c572db59b8cd109"],
+                zorder=10, lw=1, color=cmap(0))
+        ax.tick_params(axis='both', which='major', labelsize=6)
+        Y_max = aux_aux_df["c572db59b8cd109"].max()
+        Y_min = aux_aux_df["c572db59b8cd109"].min()
+        ax.text(
+            aux_aux_df["date"].min() + datetime.timedelta(days=20),
+            Y_max + (Y_max - Y_min)/4,
+            f"{product}",
+            horizontalalignment="left",
+            verticalalignment="top",
+            size=7,
+            weight="bold",
+            zorder=3
+        )
+
+        if Y_min < 0:
+            ax.hlines(0, xmin=aux_aux_df["date"].min(), xmax=aux_aux_df["date"].max(),
+                      ls="--", color="black", lw=0.75)
+        else:
+            ax.set_ylim(0)
+
+        plt.savefig(
+            f"plots/{product}_ts.svg",
+            dpi=200,
+            bbox_inches="tight",
+            facecolor="white",
+            edgecolor="none",
+            transparent=False,
+        )
+
+# ------------------------------------------------------------------
+#
+# CHART 6: Top 10 Products with highest contribution to core inflation
+#
+# ------------------------------------------------------------------
+
+
+def plot_chart_6(from_d="2020-01-01"):
+
+    data = map_tukan_inegi_products(from_d)
+
+    core_data = data[data["2dac8b4b2fc8037"] != 0].reset_index(drop=True)
+    core_data.dropna(inplace=True)
+    core_data.loc[:, "index_weighted"] = core_data["c572db59b8cd109"] * \
+        core_data["2dac8b4b2fc8037"]
+
+    core_data.loc[:, "12_m_lag"] = core_data.groupby(
+        ["product", "primary"])["index_weighted"].shift(12)
+    core_data.loc[:, "1_m_lag"] = core_data.groupby(
+        ["product", "primary"])["index_weighted"].shift(1)
+    core_data.loc[:, "yoy_change"] = core_data["index_weighted"] - \
+        core_data["12_m_lag"]
+    core_data.loc[:, "mom_change"] = core_data["index_weighted"] - \
+        core_data["1_m_lag"]
+
+    core_inflation = core_data.groupby(
+        ["date"])[["yoy_change", "mom_change"]].sum()
+    core_inflation.reset_index(inplace=True)
+    core_inflation.rename(
+        columns={"yoy_change": "yoy_core", "mom_change": "mom_core"}, inplace=True)
+
+    core_data = pd.merge(core_data, core_inflation, how="left", on="date")
+    core_data.loc[:, "yoy_contribution"] = core_data["yoy_change"] / \
+        core_data["yoy_core"]
+
+    core_data = core_data[core_data["date"] == core_data["date"].max()]
+    core_data = core_data.sort_values(
+        by="yoy_contribution", ascending=False).head(9)
+
+    # True YoY and MoM Change
+    core_data.loc[:, "yoy_change"] = core_data["yoy_change"] / \
+        core_data["12_m_lag"]
+    core_data.loc[:, "mom_change"] = core_data["mom_change"] / \
+        core_data["1_m_lag"]
+
+    top_10 = list(core_data["product__ref"])
+
+    core_data.reset_index(drop=True, inplace=True)
+
+    core_data = core_data[["product", "primary",
+                           "yoy_change", "mom_change", "yoy_contribution"]]
+    core_data.replace({"product": {"Diners, inns, torterías and taquerías": "Diners, inns & others",
+                      "Passenger air transportation": "Air transportation"}}, inplace=True)
+    core_data.set_index("product", inplace=True)
+    core_data.columns = ["Group", "YoY %", "MoM %", "Cont. to\nYoY%"]
+
+    fig = plt.figure(figsize=(6.5, 6), dpi=200)
+
+    ax = fig.add_subplot(111)
+    ax.set_ylim(-8.25, 1.5)
+    ax.set_xlim(-0.75, 9.05)
+    ax.set_axis_off()
+
+    for row, x in enumerate(core_data.values):
+        ax.annotate(
+            core_data.index[row],
+            xy=(-0.15, -1*row),
+            xycoords="data",
+            xytext=(0, 0),
+            textcoords="offset points",
+            color="black",
+            size=8,
+            va="center",
+            ha="left",
+            weight="bold"
+        )
+        column_aux = 0
+        columns_auxes = []
+        for column, label in enumerate(x):
+            if isinstance(label, str):
+                label_x = label
+            else:
+                label_x = f"{label:.1%}"
+            if column == 0:
+                column_x = 3
+            elif column == 1:
+                column_aux = 2
+            else:
+                column_x = 1.5
+            column_aux = column_aux + column_x
+            ax.annotate(
+                label_x,
+                xy=(column_aux, -1*row),
+                xycoords="data",
+                xytext=(10, 1),
+                textcoords="offset points",
+                color="black",
+                size=7.5,
+                va="center",
+                ha="center"
+            )
+            if row == 8:
+                color = "black"
+                linewidth = 0.85
+            else:
+                color = "lightgrey"
+                linewidth = 0.5
+            ax.plot([-0.75, 9.15], [-1*row - .25, -1*row - .25],
+                    color=color, linewidth=linewidth, ls="-")
+            columns_auxes.append(column_aux)
+
+    for index, column_aux in enumerate(columns_auxes):
+        col_label = core_data.columns[index]
+        ax.annotate(
+            col_label,
+            xy=(column_aux, 1.25),
+            xycoords="data",
+            xytext=(10, 2),
+            textcoords="offset points",
+            color="white",
+            size=8,
+            va="top",
+            ha="center",
+            weight="bold"
+        )
+
+    ax.plot([1.9, 9.15], [.75, .75], color="black", linewidth=0.85)
+
+    ax.add_patch(mpl.patches.Rectangle((1.9, .75), width=7.15, height=0.8, linewidth=1,
+                                       color='#2B5AA5', fill=True))
+
+    plt.savefig(
+        "plots/core_top_10.svg",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )
+
+    cpi_payload = {
+        "type": "data_table",
+        "operation": "yoy_growth_rel",
+        "language": "en",
+        "group_by": [
+            "product"
+        ],
+        "categories": {
+            "product": top_10
+        },
+        "request": [
+            {
+                "table": "mex_inegi_inpc_product_monthly",
+                "variables": [
+                    "c572db59b8cd109"
+                ]
+            }
+        ],
+        "from": "2010-01-01"
+    }
+
+    cpi_data = get_tukan_api_request(cpi_payload)
+    cpi_data = cpi_data["data"]
+    cpi_data.replace({"product": {"Diners, inns, torterías and taquerías": "Diners, inns & others",
+                     "Passenger air transportation": "Air transportation"}}, inplace=True)
+
+    cmap = mpl.cm.get_cmap(
+        "GnBu_r", 5)
+
+    for index, x in enumerate(top_10):
+        fig = plt.figure(figsize=(3, 1.5), dpi=200)
+        ax = plt.subplot(111)
+        aux_aux_df = cpi_data[cpi_data["product__ref"] == x]
+        product = aux_aux_df["product"].iloc[0]
+        ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
+        ax.plot(aux_aux_df["date"], aux_aux_df["c572db59b8cd109"],
+                zorder=10, lw=1, color=cmap(0))
+        ax.tick_params(axis='both', which='major', labelsize=6)
+        Y_max = aux_aux_df["c572db59b8cd109"].max()
+        Y_min = aux_aux_df["c572db59b8cd109"].min()
+        ax.text(
+            aux_aux_df["date"].min() + datetime.timedelta(days=20),
+            Y_max + (Y_max - Y_min)/4,
+            f"{product}",
+            horizontalalignment="left",
+            verticalalignment="top",
+            size=7,
+            weight="bold",
+            zorder=3
+        )
+
+        if Y_min < 0:
+            ax.hlines(0, xmin=aux_aux_df["date"].min(), xmax=aux_aux_df["date"].max(),
+                      ls="--", color="black", lw=0.75)
+        else:
+            ax.set_ylim(0)
+
+        plt.savefig(
+            f"plots/{product}_ts.svg",
+            dpi=200,
+            bbox_inches="tight",
+            facecolor="white",
+            edgecolor="none",
+            transparent=False,
+        )
+
 # %%
 # ------------------------------------------------------------------
 #
 # CHART 3: NON-AGRICULTURAL PRODUCTS IN BASIC BASKET
 #
 # ------------------------------------------------------------------
+
 
 def plot_chart_3(from_d="2019-01-01"):
 
@@ -336,7 +978,7 @@ def plot_chart_3(from_d="2019-01-01"):
                 "75879ec891a3cda",
                 "7889415ad57004d",
                 "eb2368d23efdb84"
-                ]
+            ]
         },
         "request": [
             {
@@ -357,32 +999,36 @@ def plot_chart_3(from_d="2019-01-01"):
     # ----
     aux_df = data.copy()
     max_date = aux_df['date'].max()
-    aux_df = aux_df[aux_df['date']== max_date]
-    aux_df = aux_df.sort_values('c572db59b8cd109', ascending=False).reset_index(drop=True)
-    top_products = aux_df.head(3).copy() # change to 10 for the table
+    aux_df = aux_df[aux_df['date'] == max_date]
+    aux_df = aux_df.sort_values(
+        'c572db59b8cd109', ascending=False).reset_index(drop=True)
+    top_products = aux_df.head(3).copy()  # change to 10 for the table
     top_products = top_products['product'].unique().tolist()
     data = data[data["product"].isin(top_products)]
-    
+
     # ----
     # The table
     # ----
     fig = plt.figure(figsize=(8, 4), dpi=200)
     ax = plt.subplot(111)
-    
+
     X_max = data["date"].iloc[-1]
 
-    sort_products = data[data["date"] == data["date"].max()].sort_values(by = "c572db59b8cd109", ascending = False)
+    sort_products = data[data["date"] == data["date"].max()].sort_values(
+        by="c572db59b8cd109", ascending=False)
     products = list(sort_products['product'].unique())
-    cmap = mpl.cm.get_cmap("GnBu_r", len(products) + 4) # So we don't get very light colors
+    # So we don't get very light colors
+    cmap = mpl.cm.get_cmap("GnBu_r", len(products) + 4)
 
     for index, product in enumerate(products):
         plot_data_aux = data[data["product"] == product].copy()
-        ax.plot(plot_data_aux["date"], plot_data_aux["c572db59b8cd109"], marker = "o", markevery = [-1], color = cmap(index), mec = "white", ms = 5)
+        ax.plot(plot_data_aux["date"], plot_data_aux["c572db59b8cd109"],
+                marker="o", markevery=[-1], color=cmap(index), mec="white", ms=5)
         Y_end = plot_data_aux["c572db59b8cd109"].iloc[-1]
-        ax_text(x = X_max + relativedelta(months = 1), y = Y_end,
-                s = f"<{product}>",
-                highlight_textprops=[{"color": cmap(index)}], 
-                                    ax = ax, weight = "bold", font = "Dosis", ha = "left", size = 7)
+        ax_text(x=X_max + relativedelta(months=1), y=Y_end,
+                s=f"<{product}>",
+                highlight_textprops=[{"color": cmap(index)}],
+                ax=ax, weight="bold", font="Dosis", ha="left", size=7)
 
     plt.axhline(y=0, color='black', linestyle='-', linewidth=1)
 
@@ -397,7 +1043,7 @@ def plot_chart_3(from_d="2019-01-01"):
         edgecolor="none",
         transparent=False,
     )
-    
+
 # %%
 # ------------------------------------------------------------------
 #
@@ -405,12 +1051,13 @@ def plot_chart_3(from_d="2019-01-01"):
 #
 # ------------------------------------------------------------------
 
+
 def plot_chart_4(from_d="2019-01-01"):
 
     payload = {
         "type": "data_table",
         "operation": "yoy_growth_rel",
-        "language": "es",
+        "language": "en",
         "group_by": [
             "product"
         ],
@@ -447,7 +1094,7 @@ def plot_chart_4(from_d="2019-01-01"):
                 "d86a62764deab74",
                 "2e0f130a7321515",
                 "0b67cb47af7f8ea"
-                ]
+            ]
         },
         "request": [
             {
@@ -463,37 +1110,66 @@ def plot_chart_4(from_d="2019-01-01"):
     response = get_tukan_api_request(payload)
     data = response["data"]
 
+    weight_payload = {
+        "type": "data_table",
+        "operation": "sum",
+        "language": "en",
+        "group_by": [
+            "product"
+        ],
+        "categories": {
+            "product": "all"
+        },
+        "request": [
+            {
+                "table": "mex_inegi_inpc_product_weights",
+                "variables": "all"
+            }
+        ]
+    }
+
+    response_weights = get_tukan_api_request(weight_payload)
+    weight_data = response_weights["data"]
+
+    data = pd.merge(data, weight_data, how="left", on="product__ref")
+
     # ----
     # The filters
     # ----
     aux_df = data.copy()
     max_date = aux_df['date'].max()
-    aux_df = aux_df[aux_df['date']== max_date]
-    aux_df = aux_df.sort_values('c572db59b8cd109', ascending=False).reset_index(drop=True)
-    top_products = aux_df.head(3).copy() # change to 10 for the table
+    aux_df = aux_df[aux_df['date'] == max_date]
+    aux_df = aux_df.sort_values(
+        'c572db59b8cd109', ascending=False).reset_index(drop=True)
+    top_products = aux_df.head(3).copy()  # change to 10 for the table
     top_products = top_products['product'].unique().tolist()
     data = data[data["product"].isin(top_products)]
-    
+
     # ----
     # The chart (for top 3)
     # ----
     fig = plt.figure(figsize=(8, 4), dpi=200)
     ax = plt.subplot(111)
-    
+
+    ax.scatter(test_df["5993e5e787e4259"], test_df["c572db59b8cd109"])
+
     X_max = data["date"].iloc[-1]
 
-    sort_products = data[data["date"] == data["date"].max()].sort_values(by = "c572db59b8cd109", ascending = False)
+    sort_products = data[data["date"] == data["date"].max()].sort_values(
+        by="c572db59b8cd109", ascending=False)
     products = list(sort_products['product'].unique())
-    cmap = mpl.cm.get_cmap("GnBu_r", len(products) + 4) # So we don't get very light colors
+    # So we don't get very light colors
+    cmap = mpl.cm.get_cmap("GnBu_r", len(products) + 4)
 
     for index, product in enumerate(products):
         plot_data_aux = data[data["product"] == product].copy()
-        ax.plot(plot_data_aux["date"], plot_data_aux["c572db59b8cd109"], marker = "o", markevery = [-1], color = cmap(index), mec = "white", ms = 5)
+        ax.plot(plot_data_aux["date"], plot_data_aux["c572db59b8cd109"],
+                marker="o", markevery=[-1], color=cmap(index), mec="white", ms=5)
         Y_end = plot_data_aux["c572db59b8cd109"].iloc[-1]
-        ax_text(x = X_max + relativedelta(months = 1), y = Y_end,
-                s = f"<{product}>",
-                highlight_textprops=[{"color": cmap(index)}], 
-                                    ax = ax, weight = "bold", font = "Dosis", ha = "left", size = 7)
+        ax_text(x=X_max + relativedelta(months=1), y=Y_end,
+                s=f"<{product}>",
+                highlight_textprops=[{"color": cmap(index)}],
+                ax=ax, weight="bold", font="Dosis", ha="left", size=7)
 
     plt.axhline(y=0, color='black', linestyle='-', linewidth=1)
 
@@ -508,13 +1184,14 @@ def plot_chart_4(from_d="2019-01-01"):
         edgecolor="none",
         transparent=False,
     )
-       
+
 # %%
 # ------------------------------------------------------------------
 #
 # CHART 5: ENERGY PRODUCTS YOY INFLATION RATE
 #
 # ------------------------------------------------------------------
+
 
 def plot_chart_5(from_d="2019-01-01"):
 
@@ -544,37 +1221,35 @@ def plot_chart_5(from_d="2019-01-01"):
         "from": from_d
     }
 
-
     response = get_tukan_api_request(payload)
     data = response["data"]
-
 
     # ----
     # The chart
     # ----
     fig = plt.figure(figsize=(8, 4), dpi=200)
     ax = plt.subplot(111)
-    
+
     X_max = data["date"].iloc[-1]
 
-    sort_products = data[data["date"] == data["date"].max()].sort_values(by = "c572db59b8cd109", ascending = False)
+    sort_products = data[data["date"] == data["date"].max()].sort_values(
+        by="c572db59b8cd109", ascending=False)
     products = list(sort_products['product'].unique())
-    cmap = mpl.cm.get_cmap("GnBu_r", len(products) + 4) # So we don't get very light colors
+    # So we don't get very light colors
+    cmap = mpl.cm.get_cmap("GnBu_r", len(products) + 4)
 
     for index, product in enumerate(products):
         plot_data_aux = data[data["product"] == product].copy()
-        ax.plot(plot_data_aux["date"], plot_data_aux["c572db59b8cd109"], marker = "o", markevery = [-1], color = cmap(index), mec = "white", ms = 5)
+        ax.plot(plot_data_aux["date"], plot_data_aux["c572db59b8cd109"],
+                marker="o", markevery=[-1], color=cmap(index), mec="white", ms=5)
         Y_end = plot_data_aux["c572db59b8cd109"].iloc[-1]
-        # loans_end = plot_data_aux["total_loans"].iloc[-1]
-        ax_text(x = X_max + relativedelta(months = 1), y = Y_end,
-                s = f"<{product}>",
-                highlight_textprops=[{"color": cmap(index)}], 
-                                    ax = ax, weight = "bold", font = "Dosis", ha = "left", size = 7)
+        # weight_end = plot_data_aux["total_loans"].iloc[-1]
+        ax_text(x=X_max + relativedelta(months=1), y=Y_end,
+                s=f"<{product}>",
+                highlight_textprops=[{"color": cmap(index)}],
+                ax=ax, weight="bold", font="Dosis", ha="left", size=7)
 
     plt.axhline(y=0, color='black', linestyle='-', linewidth=1)
-
-    
-
 
     ax.xaxis.set_major_locator(mdates.MonthLocator(1))
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
@@ -598,6 +1273,8 @@ def plot_chart_5(from_d="2019-01-01"):
 # CHART 6: SERVICES YOY INFLATION RATE
 #
 # ------------------------------------------------------------------
+
+
 def plot_chart_6(from_d="2000-01-01"):
 
     payload = {
@@ -622,11 +1299,9 @@ def plot_chart_6(from_d="2000-01-01"):
         ],
         "from": from_d
     }
-    
 
     response = get_tukan_api_request(payload)
     data = response["data"]
-
 
     # ----
     # The chart
