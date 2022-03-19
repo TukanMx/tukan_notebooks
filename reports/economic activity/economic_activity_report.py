@@ -265,7 +265,89 @@ def get_labour_enec_data(from_d="2000-01-01", language="en"):
     data = response["data"]
     return data
 
+# %%
 
+##### DEFLACTING FNCTION
+
+
+# Variables
+language = "en"
+from_d = "2000-01-01"
+base_date = "2018-11-01"
+deflate_date = "2021-02-01"
+
+
+payload = {
+    "type": "data_table",
+    "operation": "sum",
+    "language": language,
+    "group_by": [
+        "economic_activity"
+    ],
+    "categories": {
+        "economic_activity": [
+            "dfeefc621d16d0c"
+        ]
+    },
+    "request": [
+        {
+            "table": "mex_inegi_inpc_scian_monthly",
+            "variables": [
+                "c572db59b8cd109"
+            ]
+        }
+    ],
+    "from": from_d
+}
+
+response = get_tukan_api_request(payload)
+data = response["data"]
+data.rename(columns={'c572db59b8cd109':'inpc'}, inplace=True)
+
+## benchmark_deflation ##
+# temp = data.copy()
+# temp = temp[temp['date']==base_date]
+# def_val = temp.iloc[-1][3]
+# temp = data.copy()
+# temp['def_val'] = temp['inpc'] / def_val
+# temp = temp[['date','def_val']].iloc[:]
+# temp.dropna(inplace=True)
+# temp.reset_index(inplace=True,drop=True)
+# temp
+
+## yearly deflactation ##
+# temp['def_val'] = temp['inpc'] / temp['inpc'].shift(12)
+# temp = temp[['date','def_val']].iloc[:]
+# temp.dropna(inplace=True)
+# temp.reset_index(inplace=True,drop=True)
+# temp
+
+##########################################
+## example df
+# df = get_enec_data(from_d, language)
+# df = df[df['geography__ref']!='2064d512d0da97d']
+# df= df.reset_index(drop=True)
+# df = df.rename(columns={"e721ea412d5cbc1":"production_value"})
+# df = df[df['geography__ref']=='b815762a2c6a283']
+# df = df.reset_index(drop=True)
+
+##########################################    
+## example benchmark deflactation ##
+# aux_df = df.merge(temp, how='left', on='date')
+# aux_df['deflated_production_value'] = aux_df['production_value'] / aux_df['def_val']
+
+##########################################
+## example yearly deflactation ##
+# aux_df = df.merge(temp, how='left', on='date')
+# aux_df['deflated_production_value'] = aux_df['production_value'] / aux_df['def_val']
+
+##########################################    
+## plot sample ## 
+# cmap = mpl.cm.get_cmap("GnBu_r", 5)
+# fig = plt.figure(figsize=(8, 4), dpi=200)
+# ax = plt.subplot(111)
+# ax.plot(aux_df["date"], aux_df["production_value"],marker="o", ms=6, mec="white", markevery=[-1], color=cmap(0))
+# ax.plot(aux_df["date"], aux_df["deflated_production_value"],marker="x", ms=6, mec="white", markevery=[-1], color=cmap(2))
 # %%
 # ------------------------------------------------------------------
 #
@@ -624,7 +706,6 @@ def plot_chart_5_6(from_d="2006-01-01", language="en"):
     data = data[data['geography__ref']!='2064d512d0da97d']
     data= data.reset_index(drop=True)
     data = data.rename(columns={"e721ea412d5cbc1":"production_value"})
-    
     data = data[data['geography__ref']=='e721ea412d5cbc1']
     data = data.reset_index(drop=True)
         
