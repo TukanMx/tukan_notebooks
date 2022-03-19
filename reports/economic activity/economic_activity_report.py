@@ -31,7 +31,7 @@ plt.style.use(module_path + '\\utils\\tukan_style.mpl')
 
 #%%
 # ----------------------------------
-# Load igae data
+# Load  data
 # ----------------------------------
 def get_igae_data(from_d="2000-01-01", language="en"):
     payload_yoy = {
@@ -265,19 +265,8 @@ def get_labour_enec_data(from_d="2000-01-01", language="en"):
     data = response["data"]
     return data
 
-# %%
-
-##### DEFLACTING FNCTION
-
-
-# Variables
-language = "en"
-from_d = "2000-01-01"
-base_date = "2018-11-01"
-deflate_date = "2021-02-01"
-
-
-payload = {
+def get_inpc_data(from_d="2000-01-01", language="en"):
+    payload = {
     "type": "data_table",
     "operation": "sum",
     "language": language,
@@ -300,22 +289,40 @@ payload = {
     "from": from_d
 }
 
-response = get_tukan_api_request(payload)
-data = response["data"]
-data.rename(columns={'c572db59b8cd109':'inpc'}, inplace=True)
+    response = get_tukan_api_request(payload)
+    data = response["data"]
+    data.rename(columns={'c572db59b8cd109':'inpc'}, inplace=True)
+    return(data)
 
-## benchmark_deflation ##
-# temp = data.copy()
-# temp = temp[temp['date']==base_date]
-# def_val = temp.iloc[-1][3]
-# temp = data.copy()
-# temp['def_val'] = temp['inpc'] / def_val
-# temp = temp[['date','def_val']].iloc[:]
-# temp.dropna(inplace=True)
-# temp.reset_index(inplace=True,drop=True)
-# temp
+    
+# %%
+#%%
+# ----------------------------------
+# Deflation  functions
+# ----------------------------------
+# Variables
+language = "en"
+from_d = "2000-01-01"
+base_date = "2018-11-01"
+deflate_date = "2021-02-01"
 
-## yearly deflactation ##
+def benchmark_deflate(df, base_date = "2018-11-01"):
+    ## better for a reference date and real term value
+    deflate = get_inpc_data(from_d = "2000-01-01", language = "en")
+    deflate = deflate[deflate['date']==base_date]
+    def_val = deflate.iloc[-1][3]
+    deflate = data.copy()
+    deflate['def_val'] = deflate['inpc'] / def_val
+    deflate = deflate[['date','def_val']].iloc[:]
+    deflate.dropna(inplace=True)
+    deflate.reset_index(inplace=True,drop=True)
+    aux_df = df.merge(deflate, how='left', on='date')
+    aux_df['deflated_production_value'] = aux_df['production_value'] / aux_df['def_val']
+    # delete var def_val 
+    return(aux_df)
+
+
+## yearly deflactation ## better for forecasting
 # temp['def_val'] = temp['inpc'] / temp['inpc'].shift(12)
 # temp = temp[['date','def_val']].iloc[:]
 # temp.dropna(inplace=True)
@@ -331,10 +338,6 @@ data.rename(columns={'c572db59b8cd109':'inpc'}, inplace=True)
 # df = df[df['geography__ref']=='b815762a2c6a283']
 # df = df.reset_index(drop=True)
 
-##########################################    
-## example benchmark deflactation ##
-# aux_df = df.merge(temp, how='left', on='date')
-# aux_df['deflated_production_value'] = aux_df['production_value'] / aux_df['def_val']
 
 ##########################################
 ## example yearly deflactation ##
