@@ -298,7 +298,7 @@ def get_inpc_data(from_d="2000-01-01", language="en"):
 # %%
 #%%
 # ----------------------------------
-# Deflation  functions
+# Deflate  function
 # ----------------------------------
 # Variables
 language = "en"
@@ -306,43 +306,22 @@ from_d = "2000-01-01"
 base_date = "2018-11-01"
 deflate_date = "2021-02-01"
 
-def benchmark_deflate(df, base_date = "2018-11-01"):
+def benchmark_deflate(df, id="column_name", base_date = "2018-11-01"):
     ## better for a reference date and real term value
     deflate = get_inpc_data(from_d = "2000-01-01", language = "en")
-    deflate = deflate[deflate['date']==base_date]
-    def_val = deflate.iloc[-1][3]
-    deflate = data.copy()
+    def_base = deflate[deflate['date']==base_date]
+    def_val = def_base.iloc[-1][3]
+
     deflate['def_val'] = deflate['inpc'] / def_val
     deflate = deflate[['date','def_val']].iloc[:]
     deflate.dropna(inplace=True)
     deflate.reset_index(inplace=True,drop=True)
-    aux_df = df.merge(deflate, how='left', on='date')
-    aux_df['deflated_production_value'] = aux_df['production_value'] / aux_df['def_val']
+    final_df = df.merge(deflate, how='left', on='date')
+    newcol_name = 'deflated_'+str(id)
+    final_df[newcol_name] = final_df[id] / final_df['def_val']
+    final_df.drop(columns='def_val',inplace=True)
     # delete var def_val 
-    return(aux_df)
-
-
-## yearly deflactation ## better for forecasting
-# temp['def_val'] = temp['inpc'] / temp['inpc'].shift(12)
-# temp = temp[['date','def_val']].iloc[:]
-# temp.dropna(inplace=True)
-# temp.reset_index(inplace=True,drop=True)
-# temp
-
-##########################################
-## example df
-# df = get_enec_data(from_d, language)
-# df = df[df['geography__ref']!='2064d512d0da97d']
-# df= df.reset_index(drop=True)
-# df = df.rename(columns={"e721ea412d5cbc1":"production_value"})
-# df = df[df['geography__ref']=='b815762a2c6a283']
-# df = df.reset_index(drop=True)
-
-
-##########################################
-## example yearly deflactation ##
-# aux_df = df.merge(temp, how='left', on='date')
-# aux_df['deflated_production_value'] = aux_df['production_value'] / aux_df['def_val']
+    return(final_df)
 
 ##########################################    
 ## plot sample ## 
@@ -374,7 +353,8 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
     ax = plt.subplot(111)
 
     Y_mom = plot_data["mom_igae"].iloc[-1]
-    Y_mom_annualized = np.power((1+Y_mom),12)-1
+    Y_mom_prevmonth = plot_data["mom_igae"].iloc[-2]
+    Y_end_prevmonth = plot_data["yoy_igae"].iloc[-2]
     Y_end = plot_data["yoy_igae"].iloc[-1]
     X_min = plot_data["date"].iloc[0]
     X_max = plot_data["date"].iloc[-1]
@@ -382,7 +362,7 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
     ax.plot(plot_data["date"], plot_data["yoy_igae"],
             marker="o", ms=6, mec="white", markevery=[-1], color=cmap(0))
 
-    ax.hlines(0, X_min, X_max, ls = "--", color = "black", lw = 0.75)
+    ax.hlines(0, X_min, X_max, ls = "-", color = "black", lw = 0.75)
 
 
     ax_text(x=X_max + relativedelta(months=3), y=Y_end,
@@ -421,16 +401,16 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
 
     # ---
     if language == "en":
-        print(f"During {X_max.strftime('%b-%Y')} the annual change came in at {Y_end:.2%} and the monthly change at {Y_mom:.2%}; The monthly rate implies an annualized change of {Y_mom_annualized:.2%}.")
+        print(f"During {X_max.strftime('%b-%Y')} the annual change came in at {Y_end:.2%} and the monthly change at {Y_mom:.2%}; The previus YoY rate was {Y_end_prevmonth:.2%} while MoM was {Y_mom_prevmonth:.2%}.")
     else:
-        print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {Y_end:.2%} y la mensual de {Y_mom:.2%}; la variación mensual implica una tasa anualizada de {Y_mom_annualized:.2%}.")
+        print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {Y_end:.2%} y la mensual de {Y_mom:.2%}; la variación anual anterior fue de {Y_end_prevmonth:.2%}, mientras que la mensual fue de {Y_mom_prevmonth:.2%}.")
 # ------------------------------------------------------------------
 #
 # CHART 2: YOY CHANGE IN IGAE SECTORS - BARS
 #
 # ------------------------------------------------------------------
 
-def plot_chart_2(from_d="2021-11-01", language="en"):
+def plot_chart_2(from_d="2020-11-01", language="en"):
     
     data = get_igae_data(from_d, language)
     plot_data = data[data['economic_activity__ref']!='dfeefc621d16d0c'].copy()
