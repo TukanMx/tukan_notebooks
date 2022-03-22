@@ -741,31 +741,31 @@ def plot_chart_5_(from_d="2006-01-01", language="en"):
     #     print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {Y_end:.2%} y la mensual de {Y_mom:.2%}; la variación mensual implica una tasa anualizada de {Y_mom_annualized:.2%}.")
     
 
-def plot_construction_labor(from_d="2006-01-01", language="en"):
-    work_data = get_labour_enec_data(from_d,language)
-    work_data['workforce'] = work_data['14066e939239b6e'] + work_data['62a2aecf0193aac'] + + work_data['74e4b5f7542fc3f'] ++ work_data['f12649252c82ff0']
-    work_data = work_data[['date','workforce']].copy()
-    # work_data
+# def plot_construction_labor(from_d="2006-01-01", language="en"):
+#     work_data = get_labour_enec_data(from_d,language)
+#     work_data['workforce'] = work_data['14066e939239b6e'] + work_data['62a2aecf0193aac'] + + work_data['74e4b5f7542fc3f'] + work_data['f12649252c82ff0']
+#     work_data = work_data[['date','workforce']].copy()
+#     # work_data
     
-    min_wf = work_data.sort_values(by=['workforce'], ascending=True).iloc[0]['workforce']
-    min_wf_date = work_data.sort_values(by=['workforce'], ascending=True).iloc[0]['date']
-    last_wf = work_data.iloc[-1]['workforce']
-    last_wf_date = work_data.iloc[-1]['date']
-    diff_wf = last_wf - min_wf
+#     min_wf = work_data.sort_values(by=['workforce'], ascending=True).iloc[0]['workforce']
+#     min_wf_date = work_data.sort_values(by=['workforce'], ascending=True).iloc[0]['date']
+#     last_wf = work_data.iloc[-1]['workforce']
+#     last_wf_date = work_data.iloc[-1]['date']
+#     diff_wf = last_wf - min_wf
     
-    print("Since the all time low "+ str(min_wf)+ " in date, a total of " +str(diff_wf)+" have people joined the construction workforce, which includes these positions...\nThe count of people working in the construction sector adds up to "+str(last_wf))
+#     print("Since the all time low "+ str(min_wf)+ " in date, a total of " +str(diff_wf)+" have people joined the construction workforce, which includes these positions...\nThe count of people working in the construction sector adds up to "+str(last_wf))
     
-    ##### Plot
-    cmap = mpl.cm.get_cmap("GnBu_r", 5)
-    fig = plt.figure(figsize=(8, 4), dpi=200)
-    ax = plt.subplot(111)
+#     ##### Plot
+#     cmap = mpl.cm.get_cmap("GnBu_r", 5)
+#     fig = plt.figure(figsize=(8, 4), dpi=200)
+#     ax = plt.subplot(111)
 
 
-    ax.plot(work_data["date"], work_data["workforce"],
-            marker="o", ms=6, mec="white", markevery=[-1], color=cmap(0))
+#     ax.plot(work_data["date"], work_data["workforce"],
+#             marker="o", ms=6, mec="white", markevery=[-1], color=cmap(0))
 
-    ax.xaxis.set_major_locator(mdates.YearLocator(2))
-    ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
+#     ax.xaxis.set_major_locator(mdates.YearLocator(2))
+#     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
     
     
 
