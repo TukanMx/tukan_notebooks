@@ -215,9 +215,14 @@ def get_enec_data(from_d="2000-01-01", language="en"):
     ],
     "categories": {
         "economic_activity": [
-            "457155464609a2f"
+            "457155464609a2f", # General level
+            "14edc470d8f3e2f",
+            "4382bc56abc3b3b",
+            "222bc7bc27c6906"
         ],
-        "geography": "all"
+        "geography": [
+            "b815762a2c6a283"
+        ]
     },
     "request": [
         {
@@ -228,7 +233,7 @@ def get_enec_data(from_d="2000-01-01", language="en"):
         }
     ],
     "from": from_d
-}
+    }
 
     response = get_tukan_api_request(payload)
     data = response["data"]
@@ -307,11 +312,9 @@ base_date = "2018-11-01"
 deflate_date = "2021-02-01"
 
 def benchmark_deflate(df, id="column_name", base_date = "2018-11-01"):
-    ## better for a reference date and real term value
     deflate = get_inpc_data(from_d = "2000-01-01", language = "en")
     def_base = deflate[deflate['date']==base_date]
     def_val = def_base.iloc[-1][3]
-
     deflate['def_val'] = deflate['inpc'] / def_val
     deflate = deflate[['date','def_val']].iloc[:]
     deflate.dropna(inplace=True)
@@ -684,61 +687,80 @@ def plot_chart_4(from_d="2016-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_5_(from_d="2006-01-01", language="en"):
-    # data = get_enec_data(from_d, language)
-    # data = data[data['geography__ref']!='2064d512d0da97d']
-    # data= data.reset_index(drop=True)
-    # data = data.rename(columns={"e721ea412d5cbc1":"production_value"})
-    # data = data[data['geography__ref']=='e721ea412d5cbc1']
-    # data = data.reset_index(drop=True)
-        
-    # nat_data = data[data['geography__ref']=='35f06e5ac6c66c6'].reset_index(drop=True)
-    # # Deflactate function pending 
-    # sta_data = data[data['geography__ref']!='35f06e5ac6c66c6'].reset_index(drop=True)
-    # # Deflactate function pending
+def plot_chart_5(from_d="2018-01-01", language="en"):
+    data = get_enec_data(from_d, language)
+    data = data.rename(columns={"e721ea412d5cbc1":"production_value"})
+    data['production_value'] = data['production_value'] / 1000000
+    data.reset_index(inplace=True, drop=True)
+    data = data.pivot(index='date', columns='economic_activity__ref')['production_value']
+    data.reset_index(inplace=True)
+    if language =='en':
+        construction = 'Construction'
+        civil = 'Civil engineering constructions'
+        buildings = 'Buildings'
+        specialty = 'Specialty trade contractors'
+        unit = 'Millions of pesos'
+    else:
+        construction = 'Construcción'
+        civil = 'Obras de ingeniería civil'
+        buildings = 'Edificación'
+        specialty = 'Trabajos especializados'
+        unit = 'Millones de pesos'
+    data.rename(columns={'14edc470d8f3e2f':civil,'222bc7bc27c6906':specialty,'4382bc56abc3b3b':buildings,'457155464609a2f':construction}, inplace=True)
+    
+    mom_var = (data[construction].iloc[-1] / data[construction].iloc[-2])-1
+    yoy_var = (data[construction].iloc[-1] / data[construction].iloc[-13])-1
+    X_max = data["date"].iloc[-1]
+
     
     ##### Plot
-    # cmap = mpl.cm.get_cmap("GnBu_r", 5)
-    # fig = plt.figure(figsize=(8, 4), dpi=200)
-    # ax = plt.subplot(111)
+    cmap = mpl.cm.get_cmap("GnBu_r", 5)
+    fig = plt.figure(figsize=(8, 4), dpi=200)
+    ax = plt.subplot(111)
 
-    # ax.plot(work_data["date"], work_data["workforce"],
-    #         marker="o", ms=6, mec="white", markevery=[-1], color=cmap(0))
+    width = 20      
+    p1 = ax.bar(data['date'], data[buildings], width, color=cmap(1), zorder=3)
+    p2 = ax.bar(data['date'], data[civil], width,  bottom= data[buildings], color=cmap(2), zorder=3)
+    p3 = ax.bar(data['date'], data[specialty], width,  bottom=data[buildings]+data[civil], color=cmap(0), zorder=3)
 
-    # ax.xaxis.set_major_locator(mdates.YearLocator(2))
-    # ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
+    ax.legend((p1[0], p2[0], p3[0]), (buildings, civil, specialty),loc="lower center", bbox_to_anchor=(0.5, 1), ncol=3)
+
+    plt.ylabel(unit)
+    ax.xaxis.set_major_locator(mdates.YearLocator(2))
+    ax.xaxis.set_minor_locator(mdates.YearLocator(1))
+    ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
 
     # fig.text(
     #     0.1,
     #     1,
-    #     "Indicador General de la Actividad Económica (IGAE) - YoY Change",
+    #     "Deep Dive - Construction",
     #     size=14,
     #     weight = "bold"
     # )
-    # if language == "en":
-    #     plt.savefig(
-    #     "plots/yoy_igae_change.png",
-    #     dpi=200,
-    #     bbox_inches="tight",
-    #     facecolor="white",
-    #     edgecolor="none",
-    #     transparent=False,
-    # )
-    # else:
-    #     plt.savefig(
-    #     "plots/es_yoy_igae_change.png",
-    #     dpi=200,
-    #     bbox_inches="tight",
-    #     facecolor="white",
-    #     edgecolor="none",
-    #     transparent=False,
-    # )  
+    if language == "en":
+        plt.savefig(
+        "plots/construction_value.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )
+    else:
+        plt.savefig(
+        "plots/es_construction_value.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )  
 
     # # ---
-    # if language == "en":
-    #     print(f"During {X_max.strftime('%b-%Y')} the annual change came in at {Y_end:.2%} and the monthly change at {Y_mom:.2%}; The monthly rate implies an annualized change of {Y_mom_annualized:.2%}.")
-    # else:
-    #     print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {Y_end:.2%} y la mensual de {Y_mom:.2%}; la variación mensual implica una tasa anualizada de {Y_mom_annualized:.2%}.")
+    if language == "en":
+        print(f"During {X_max.strftime('%b-%Y')} the annual change came in at {yoy_var:.2%} and the monthly change at {mom_var:.2%}.")
+    else:
+        print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {yoy_var:.2%} y la mensual de {mom_var:.2%}.")
     
 
 # def plot_construction_labor(from_d="2006-01-01", language="en"):
@@ -788,6 +810,5 @@ def plot_chart_5_(from_d="2006-01-01", language="en"):
 # CHART 7: CONSUMER AND BUSINESS - LINES
 #
 # ------------------------------------------------------------------
-
 
 # %%
