@@ -3,6 +3,7 @@
 # We load fonts and stylesheet.
 # ----------------------------------
 import datetime
+from turtle import width
 import matplotlib.dates as mdates
 # from matplotlib.lines import _LineStyle
 import matplotlib.ticker as ticker
@@ -299,8 +300,70 @@ def get_inpc_data(from_d="2000-01-01", language="en"):
     data.rename(columns={'c572db59b8cd109':'inpc'}, inplace=True)
     return(data)
 
-    
-# %%
+def get_emim_data(from_d="2013-01-01", language="en", activities=True):
+    if activities==True:
+        payload = {
+        "type": "data_table",
+        "operation": "last_growth_rel",
+        "language": language,
+        "group_by": [
+            "economic_activity",
+            "geography"
+        ],
+        "categories": {
+            "economic_activity": "all",
+            "geography": [
+                "b815762a2c6a283"
+            ]
+        },
+        "request": [
+            {
+                "table": "mex_inegi_emim_variables",
+                "variables": [
+                    "86336e63b802373",
+                    "3600ee1d0eabc88"
+                ]
+            }
+        ],
+        "from": from_d
+        }
+        response = get_tukan_api_request(payload)
+        data = response["data"]
+        data.rename(columns={'3600ee1d0eabc88':'sales_value','86336e63b802373':'production_value'}, inplace=True)
+    else:
+        payload = {
+        "type": "data_table",
+        "operation": "sum",
+        "language": language,
+        "group_by": [
+            "economic_activity",
+            "geography"
+        ],
+        "categories": {
+            "economic_activity": ["dfeefc621d16d0c"],
+            "geography": [
+                "b815762a2c6a283"
+            ]
+        },
+        "request": [
+            {
+                "table": "mex_inegi_emim_variables",
+                "variables": [
+                    "86336e63b802373",
+                    "3600ee1d0eabc88"
+                ]
+            }
+        ],
+        "from": from_d
+        }
+        response = get_tukan_api_request(payload)
+        data = response["data"]
+        data.rename(columns={'3600ee1d0eabc88':'sales_value','86336e63b802373':'production_value'}, inplace=True)
+        data['sales_value'] = data['sales_value']/1000000
+        data['production_value'] = data['production_value']/1000000    
+
+    return(data)
+
 #%%
 # ----------------------------------
 # Deflate  function
@@ -679,7 +742,6 @@ def plot_chart_4(from_d="2016-01-01", language="en"):
     else :
         print(f"Durante {max_date.strftime('%b-%Y')} las actividades económicas con mejor desempeño fueron {acts[2]} ({growth_mom[2]:.2%}), {acts[1]} ({growth_mom[1]:.2%}) y {acts[0]} ({growth_mom[0]:.2%}).")
 
-# %%
 
 # ------------------------------------------------------------------
 #
@@ -699,13 +761,13 @@ def plot_chart_5(from_d="2018-01-01", language="en"):
         civil = 'Civil engineering constructions'
         buildings = 'Buildings'
         specialty = 'Specialty trade contractors'
-        unit = 'Millions of pesos'
+        unit = 'Millions of MXN'
     else:
         construction = 'Construcción'
         civil = 'Obras de ingeniería civil'
         buildings = 'Edificación'
         specialty = 'Trabajos especializados'
-        unit = 'Millones de pesos'
+        unit = 'Millones de MXN'
     data.rename(columns={'14edc470d8f3e2f':civil,'222bc7bc27c6906':specialty,'4382bc56abc3b3b':buildings,'457155464609a2f':construction}, inplace=True)
     
     mom_var = (data[construction].iloc[-1] / data[construction].iloc[-2])-1
@@ -789,15 +851,95 @@ def plot_chart_5(from_d="2018-01-01", language="en"):
 #     ax.xaxis.set_major_locator(mdates.YearLocator(2))
 #     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
     
+
+# ------------------------------------------------------------------
+#
+# CHART 6: MANUFACTURING - LINES
+#
+# ------------------------------------------------------------------
+
+def plot_chart_6(from_d="2013-01-01", language="en"):
+    activities_data = get_emim_data(from_d, language, activities=True)
+    agg_data = get_emim_data(from_d, language, activities=False)
     
+    # Activities data
+    activities_data = activities_data[activities_data['date']==activities_data['date'].max()]
+    activities_data.reset_index(inplace=True,drop=True)
+    # Top 3 MoM growth for sales
+    activities_data = activities_data.sort_values(by="sales_value", ascending=False).reset_index(drop=True)
+    top_sales_acts = activities_data.head(3)['economic_activity'].tolist()
+    top_sales_val = activities_data.head(3)['sales_value'].tolist()
+    # Top 3 MoM growth for production 
+    activities_data = activities_data.sort_values(by="production_value", ascending=False).reset_index(drop=True)
+    top_production_acts = activities_data.head(3)['economic_activity'].tolist()
+    top_production_val = activities_data.head(3)['production_value'].tolist()
+    
+    # Aggregated data
+    agg_data['yoy_sales'] = (agg_data['sales_value'] / agg_data['sales_value'].shift(12))-1
+    agg_data['yoy_production'] = (agg_data['production_value'] / agg_data['production_value'].shift(12))-1
+    yoy_sales = agg_data['yoy_sales'].iloc[-1]
+    yoy_production = agg_data['yoy_production'].iloc[-1]
+    X_max = agg_data["date"].iloc[-1]
+    
+    # Plot
+    cmap = mpl.cm.get_cmap("GnBu_r", 5)
+    fig = plt.figure(figsize=(8, 4), dpi=200)
+    ax = plt.subplot(111)
+    
+    if language =='en':
+        production = 'Production'
+        sales = 'Sales'
+        unit = 'Millions of MXN'
+    else:
+        production = 'Producción'
+        sales = 'Ventas'
+        unit = 'Millones de MXN'
 
-# ------------------------------------------------------------------
-#
-# CHART 6: MANUFACTURING - BARS
-#
-# ------------------------------------------------------------------
+    ax.plot(agg_data["date"], agg_data["production_value"], color=cmap(0), label = production, zorder=3)
+    # ax.plot(agg_data["date"], agg_data["sales_value"], color=cmap(2), ls = "--", label=sales)
+    ax.bar(agg_data["date"], agg_data["sales_value"],color=cmap(2), width=20, label=sales, zorder=2)
+    
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1), ncol=2)
+
+    ax.set_ylim(0)
+    ax.xaxis.set_major_locator(mdates.YearLocator(2))
+    ax.xaxis.set_minor_locator(mdates.YearLocator(1))
+    ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
+    plt.ylabel(unit)
 
 
+    # fig.text(
+    #     0.1,
+    #     1,
+    #     "Manufacturing",
+    #     size=14,
+    #     weight = "bold"
+    # )
+    if language == "en":
+        plt.savefig(
+        "plots/manufacturing.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )
+    else:
+        plt.savefig(
+        "plots/es_manufacturing.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )  
+    
+    if language =='en':
+        print(f"On {X_max.strftime('%b-%Y')}, the  production value of manufactured products changed by {yoy_production:.2%} YoY; the sales value change came in at {yoy_sales:.2%}. In production value, the top 3 performing economic activities given its MoM rate were {top_production_acts[0]} ({top_production_val[0]:.2%}), {top_production_acts[1]} ({top_production_val[1]:.2%}) and {top_production_acts[2]} ({top_production_val[2]:.2%}); in sales value, {top_sales_acts[0]} ({top_sales_val[0]:.2%}), {top_sales_acts[1]} ({top_sales_val[1]:.2%}) and {top_sales_acts[2]} ({top_sales_val[2]:.2%}) came in at the top.")
+    else:
+        print(f"En {X_max.strftime('%b-%Y')}, el valor de la producción de los productos manufacturados cambió en {yoy_production:.2%} YoY; el valor de las ventas cambió en {yoy_sales:.2%}. En cuanto al valor de la producción, las 3 actividades económicas con mejor desempelo, dada su variacion mensual, fueron {top_production_acts[0]} ({top_production_val[0]:.2%}), {top_production_acts[1]} ({top_production_val[1]:.2%}) and {top_production_acts[2]} ({top_production_val[2]:.2%}); en cuanto al valor de las ventas, {top_sales_acts[0]} ({top_sales_val[0]:.2%}), {top_sales_acts[1]} ({top_sales_val[1]:.2%}) y {top_sales_acts[2]} ({top_sales_val[2]:.2%}) fueron las de mejor desempeño.")
+    
+# %%    
 # ------------------------------------------------------------------
 #
 # CHART 7: SERVICES - BARS
