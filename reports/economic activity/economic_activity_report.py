@@ -459,7 +459,7 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
 
 
     ax_text(x=X_max + relativedelta(months=3), y=Y_end,
-            s=f"<{Y_end:.2%}>",
+            s=f"<{Y_end:.1%}>",
             highlight_textprops=[{"color": cmap(0)}],
             ax=ax, weight="bold", font="Dosis", ha="left", size=9)
 
@@ -494,9 +494,9 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
 
     # ---
     if language == "en":
-        print(f"During {X_max.strftime('%b-%Y')} the annual change came in at {Y_end:.2%} and the monthly change at {Y_mom:.2%}; The previus YoY rate was {Y_end_prevmonth:.2%} while MoM was {Y_mom_prevmonth:.2%}.")
+        print(f"During {X_max.strftime('%b-%Y')} the annual change came in at {Y_end:.1%} and the monthly change at {Y_mom:.1%}; The previus YoY rate was {Y_end_prevmonth:.1%} while MoM was {Y_mom_prevmonth:.1%}.")
     else:
-        print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {Y_end:.2%} y la mensual de {Y_mom:.2%}; la variación anual anterior fue de {Y_end_prevmonth:.2%}, mientras que la mensual fue de {Y_mom_prevmonth:.2%}.")
+        print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {Y_end:.1%} y la mensual de {Y_mom:.1%}; la variación anual anterior fue de {Y_end_prevmonth:.1%}, mientras que la mensual fue de {Y_mom_prevmonth:.1%}.")
 # ------------------------------------------------------------------
 #
 # CHART 2: YOY CHANGE IN IGAE SECTORS - BARS
@@ -605,9 +605,9 @@ def plot_chart_2(from_d="2020-11-01", language="en"):
 
     # # ---
     if language == "en":
-        print(f"During {max_date.strftime('%b-%Y')} the annual change came in at {pri_yoy:.2%} for primary activities, at {sec_yoy:.2%} for secondary activities and at {ter_yoy:.2%} for tertiary activities.\n\nThe monthly change rates came in at {pri_mom:.2%} ({pri_ann:.2%} annualized) for primary activities, at {sec_mom:.2%} ({sec_ann:.2%} annualized) for secondary activities and at {ter_mom:.2%} ({ter_ann:.2%} annualized) for tertiary activities.")
+        print(f"During {max_date.strftime('%b-%Y')} the annual change came in at {pri_yoy:.1%} for primary activities, at {sec_yoy:.1%} for secondary activities and at {ter_yoy:.1%} for tertiary activities.\n\nThe monthly change rates came in at {pri_mom:.1%} ({pri_ann:.1%} annualized) for primary activities, at {sec_mom:.1%} ({sec_ann:.1%} annualized) for secondary activities and at {ter_mom:.1%} ({ter_ann:.1%} annualized) for tertiary activities.")
     else:
-        print(f"Durante {max_date.strftime('%b-%Y')} la variación anual de las acts. primarias fue de {pri_yoy:.2%}, la de las acts. secundarias de {sec_yoy:.2%}  y la de las acts. terciarias de {ter_yoy:.2%}.\n\nLa variación mensual fue de {pri_mom:.2%} ({pri_ann:.2%} tasa anualizada) para las acts. primarias, de {sec_mom:.2%} ({sec_ann:.2%} tasa anualizada) para las acts. secundarias y de {ter_mom:.2%} ({ter_ann:.2%} annualized) para las terciarias.")
+        print(f"Durante {max_date.strftime('%b-%Y')} la variación anual de las acts. primarias fue de {pri_yoy:.1%}, la de las acts. secundarias de {sec_yoy:.1%}  y la de las acts. terciarias de {ter_yoy:.1%}.\n\nLa variación mensual fue de {pri_mom:.1%} ({pri_ann:.1%} tasa anualizada) para las acts. primarias, de {sec_mom:.1%} ({sec_ann:.1%} tasa anualizada) para las acts. secundarias y de {ter_mom:.1%} ({ter_ann:.1%} annualized) para las terciarias.")
 
 # ------------------------------------------------------------------
 #
@@ -685,9 +685,9 @@ def plot_chart_3(from_d="2016-01-01", language="en"):
 
     # # ---
     if language == "en":
-        print(f"During {max_date.strftime('%b-%Y')} the best perfoming economic activities were {acts[2]} ({growth_yoy[2]:.2%}), {acts[1]} ({growth_yoy[1]:.2%}) and {acts[0]} ({growth_yoy[0]:.2%}).")
+        print(f"During {max_date.strftime('%b-%Y')} the best perfoming economic activities were {acts[2]} ({growth_yoy[2]:.1%}), {acts[1]} ({growth_yoy[1]:.1%}) and {acts[0]} ({growth_yoy[0]:.1%}).")
     else :
-        print(f"Durante {max_date.strftime('%b-%Y')} las actividades económicas con mejor desempeño fueron {acts[2]} ({growth_yoy[2]:.2%}), {acts[1]} ({growth_yoy[1]:.2%}) y {acts[0]} ({growth_yoy[0]:.2%}).")
+        print(f"Durante {max_date.strftime('%b-%Y')} las actividades económicas con mejor desempeño fueron {acts[2]} ({growth_yoy[2]:.1%}), {acts[1]} ({growth_yoy[1]:.1%}) y {acts[0]} ({growth_yoy[0]:.1%}).")
 
 # ------------------------------------------------------------------
 #
@@ -765,9 +765,9 @@ def plot_chart_4(from_d="2016-01-01", language="en"):
 
     # # ---
     if language == "en":
-        print(f"During {max_date.strftime('%b-%Y')} the best perfoming economic activities were {acts[2]} ({growth_mom[2]:.2%}), {acts[1]} ({growth_mom[1]:.2%}) and {acts[0]} ({growth_mom[0]:.2%}).")
+        print(f"During {max_date.strftime('%b-%Y')} the best perfoming economic activities were {acts[2]} ({growth_mom[2]:.1%}), {acts[1]} ({growth_mom[1]:.1%}) and {acts[0]} ({growth_mom[0]:.1%}).")
     else :
-        print(f"Durante {max_date.strftime('%b-%Y')} las actividades económicas con mejor desempeño fueron {acts[2]} ({growth_mom[2]:.2%}), {acts[1]} ({growth_mom[1]:.2%}) y {acts[0]} ({growth_mom[0]:.2%}).")
+        print(f"Durante {max_date.strftime('%b-%Y')} las actividades económicas con mejor desempeño fueron {acts[2]} ({growth_mom[2]:.1%}), {acts[1]} ({growth_mom[1]:.1%}) y {acts[0]} ({growth_mom[0]:.1%}).")
 
 
 # ------------------------------------------------------------------
@@ -847,9 +847,9 @@ def plot_chart_5(from_d="2018-01-01", language="en"):
 
     # # ---
     if language == "en":
-        print(f"During {X_max.strftime('%b-%Y')} the annual change came in at {yoy_var:.2%} and the monthly change at {mom_var:.2%}.")
+        print(f"During {X_max.strftime('%b-%Y')} the annual change came in at {yoy_var:.1%} and the monthly change at {mom_var:.1%}.")
     else:
-        print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {yoy_var:.2%} y la mensual de {mom_var:.2%}.")
+        print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {yoy_var:.1%} y la mensual de {mom_var:.1%}.")
     
 
 # def plot_construction_labor(from_d="2006-01-01", language="en"):
@@ -962,9 +962,9 @@ def plot_chart_6(from_d="2013-01-01", language="en"):
     )  
     
     if language =='en':
-        print(f"On {X_max.strftime('%b-%Y')}, the  production value of manufactured products changed by {yoy_production:.2%} YoY; the sales value change came in at {yoy_sales:.2%}. In production value, the top 3 performing economic activities given its MoM rate were {top_production_acts[0]} ({top_production_val[0]:.2%}), {top_production_acts[1]} ({top_production_val[1]:.2%}) and {top_production_acts[2]} ({top_production_val[2]:.2%}); in sales value, {top_sales_acts[0]} ({top_sales_val[0]:.2%}), {top_sales_acts[1]} ({top_sales_val[1]:.2%}) and {top_sales_acts[2]} ({top_sales_val[2]:.2%}) came in at the top.")
+        print(f"On {X_max.strftime('%b-%Y')}, the  production value of manufactured products changed by {yoy_production:.1%} YoY; the sales value change came in at {yoy_sales:.1%}. In production value, the top 3 performing economic activities given its MoM rate were {top_production_acts[0]} ({top_production_val[0]:.1%}), {top_production_acts[1]} ({top_production_val[1]:.1%}) and {top_production_acts[2]} ({top_production_val[2]:.1%}); in sales value, {top_sales_acts[0]} ({top_sales_val[0]:.1%}), {top_sales_acts[1]} ({top_sales_val[1]:.1%}) and {top_sales_acts[2]} ({top_sales_val[2]:.1%}) came in at the top.")
     else:
-        print(f"En {X_max.strftime('%b-%Y')}, el valor de la producción de los productos manufacturados cambió en {yoy_production:.2%} YoY; el valor de las ventas cambió en {yoy_sales:.2%}. En cuanto al valor de la producción, las 3 actividades económicas con mejor desempelo, dada su variacion mensual, fueron {top_production_acts[0]} ({top_production_val[0]:.2%}), {top_production_acts[1]} ({top_production_val[1]:.2%}) and {top_production_acts[2]} ({top_production_val[2]:.2%}); en cuanto al valor de las ventas, {top_sales_acts[0]} ({top_sales_val[0]:.2%}), {top_sales_acts[1]} ({top_sales_val[1]:.2%}) y {top_sales_acts[2]} ({top_sales_val[2]:.2%}) fueron las de mejor desempeño.")
+        print(f"En {X_max.strftime('%b-%Y')}, el valor de la producción de los productos manufacturados cambió en {yoy_production:.1%} YoY; el valor de las ventas cambió en {yoy_sales:.1%}. En cuanto al valor de la producción, las 3 actividades económicas con mejor desempelo, dada su variacion mensual, fueron {top_production_acts[0]} ({top_production_val[0]:.1%}), {top_production_acts[1]} ({top_production_val[1]:.1%}) and {top_production_acts[2]} ({top_production_val[2]:.1%}); en cuanto al valor de las ventas, {top_sales_acts[0]} ({top_sales_val[0]:.1%}), {top_sales_acts[1]} ({top_sales_val[1]:.1%}) y {top_sales_acts[2]} ({top_sales_val[2]:.1%}) fueron las de mejor desempeño.")
     
 # %%    
 # ------------------------------------------------------------------
@@ -979,66 +979,85 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
     mom_data = get_ems_data(from_d, language, operation ="last_growth_rel")
     
     top_mom = mom_data[mom_data['date'] == mom_data['date'].max()].sort_values(by="income", ascending=False).reset_index(drop=True).head(10)
-    
+    top_mom = top_mom.sort_values(by="income").reset_index(drop=True)
     top_yoy = yoy_data[yoy_data['date'] == yoy_data['date'].max()].sort_values(by="income", ascending=False).reset_index(drop=True).head(10)
+    top_yoy = top_yoy.sort_values(by="income").reset_index(drop=True)
+    if language == 'en':
+        top_yoy.replace({'Hotels with other integrated services':'Hotels and Resorts','Amusement parks and theme parks of the private sector':'Amusement and theme parks','Water parks and spas in the private sector':'Water parks and spas','Bars, canteens and similar':'Bars','Botanical and zoological gardens of the private sector':'Botanical and zoological gardens','Nightclubs, discos and similar':'Nightclubs','Museums in the private sector':'Museums','Agents and managers for artists, athletes, entertainers, and other public figures':'Agents and managers','General secondary education schools in the private sector':'Secondary education','Commercial air, rail, and water transportation equipment rental and leasing':'Transportation equipment rental and leasing', 'Local messengers and local delivery':'Local messengers and delivery','Scientific research and development in social sciences and humanities, provided by the private sector':'Scientific research','Display movies and other audiovisual materials':'Movies exhibition','Motion picture and video distribution':'Movies distribution','Other schools and instruction':'Other educational services'},inplace=True)
+
+        top_mom.replace({'Hotels with other integrated services':'Hotels and Resorts','Amusement parks and theme parks of the private sector':'Amusement and theme parks','Water parks and spas in the private sector':'Water parks and spas','Bars, canteens and similar':'Bars','Botanical and zoological gardens of the private sector':'Botanical and zoological gardens','Nightclubs, discos and similar':'Nightclubs','Museums in the private sector':'Museums','Agents and managers for artists, athletes, entertainers, and other public figures':'Agents and managers','General secondary education schools in the private sector':'Secondary education','Commercial air, rail, and water transportation equipment rental and leasing':'Transportation equipment rental and leasing', 'Local messengers and local delivery':'Local messengers and delivery','Scientific research and development in social sciences and humanities, provided by the private sector':'Scientific research','Display movies and other audiovisual materials':'Movies exhibition','Motion picture and video distribution':'Movies distribution','Other schools and instruction':'Other educational services'},inplace=True)
+    else:
+        top_yoy.replace({'Hoteles con otros servicios integrados':'Hoteles y resorts','Escuelas de educación secundaria general del sector privado':'Educación secundaria',
+       'Organizadores de convenciones y ferias comerciales e industriales':'Organizadores de convenciones y ferias', 'Parques de diversiones y temáticos del sector privado':'Parques de diversiones','Parques acuáticos y balnearios del sector privado':'Parques acuáticos y balnearios',
+       'Bares, cantinas y similares':'Bares y cantinas','Jardines botánicos y zoológicos del sector privado':'Jardines botánicos y zoológicos','Centros nocturnos, discotecas y similares':'Discotecas','Museos del sector privado':'Museos','Agentes y representantes de artistas, deportistas y similares':'Agentes y representantes','Distribución de películas y de otros materiales audiovisuales':'Distribución de películas','Exhibición de películas y otros materiales audiovisuales':'Exhibición de películas','Alquiler de maquinaria y equipo para construcción, minería y actividades forestales':'Alquier de maquinaria y equipo', 'Edición de software y edición de software integrada con la reproducción':'Edición de software',  'Servicios de investigación científica y desarrollo en ciencias sociales y humanidades, prestados por el sector privado':'Investigación científica'},inplace=True)
+    
+        top_mom.replace({'Hoteles con otros servicios integrados':'Hoteles y resorts','Escuelas de educación secundaria general del sector privado':'Educación secundaria',
+       'Organizadores de convenciones y ferias comerciales e industriales':'Organizadores de convenciones y ferias', 'Parques de diversiones y temáticos del sector privado':'Parques de diversiones','Parques acuáticos y balnearios del sector privado':'Parques acuáticos y balnearios',
+       'Bares, cantinas y similares':'Bares y cantinas','Jardines botánicos y zoológicos del sector privado':'Jardines botánicos y zoológicos','Centros nocturnos, discotecas y similares':'Discotecas','Museos del sector privado':'Museos','Agentes y representantes de artistas, deportistas y similares':'Agentes y representantes','Distribución de películas y de otros materiales audiovisuales':'Distribución de películas','Exhibición de películas y otros materiales audiovisuales':'Exhibición de películas','Alquiler de maquinaria y equipo para construcción, minería y actividades forestales':'Alquier de maquinaria y equipo', 'Edición de software y edición de software integrada con la reproducción':'Edición de software',  'Servicios de investigación científica y desarrollo en ciencias sociales y humanidades, prestados por el sector privado':'Investigación científica'},inplace=True)
     
     # Plot
     cmap = mpl.cm.get_cmap("GnBu_r", 5)
-    fig = plt.figure(figsize=(8, 4), dpi=200)
-    ax = plt.subplot(111)
-    
-    # if language =='en':
-    #     production = 'Production'
-    #     sales = 'Sales'
-    #     unit = 'Millions of MXN'
-    # else:
-    #     production = 'Producción'
-    #     sales = 'Ventas'
-    #     unit = 'Millones de MXN'
+    fig = plt.figure(figsize=(11, 4), dpi=200)
+    ax1 = plt.subplot(121)
+    ax2 = plt.subplot(122)
+    ax1.barh(top_yoy["economic_activity"], top_yoy["income"],color=cmap(0), label="sales", zorder=2)
+    ax2.barh(top_mom["economic_activity"], top_mom["income"],color=cmap(2), label="sales", zorder=2)
+    # plt.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9,wspace=1.5,hspace=1)
+    fig.tight_layout()
 
-    # ax.plot(agg_data["date"], agg_data["production_value"], color=cmap(0), label = production, zorder=3)
-    # # ax.plot(agg_data["date"], agg_data["sales_value"], color=cmap(2), ls = "--", label=sales)
-    ax.barh(top_yoy["economic_activity"], top_yoy["income"],color=cmap(2), width=20, label="sales", zorder=2)
+    ax1.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0%}"))
+    ax2.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0%}"))
+    ax1.title.set_text('YoY')
+    ax2.title.set_text('MoM')
     
-    # ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1), ncol=2)
-
-    # ax.set_ylim(0)
-    # ax.xaxis.set_major_locator(mdates.YearLocator(2))
-    # ax.xaxis.set_minor_locator(mdates.YearLocator(1))
-    # ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
-    # plt.ylabel(unit)
+    yoy_first_act_name =top_yoy["economic_activity"].iloc[-1]
+    yoy_second_act_name =top_yoy["economic_activity"].iloc[-2]
+    yoy_third_act_name =top_yoy["economic_activity"].iloc[-3]
+    yoy_first_act_value =top_yoy["income"].iloc[-1]
+    yoy_second_act_value =top_yoy["income"].iloc[-2]
+    yoy_third_act_value =top_yoy["income"].iloc[-3]
+    
+    mom_first_act_name =top_mom["economic_activity"].iloc[-1]
+    mom_second_act_name =top_mom["economic_activity"].iloc[-2]
+    mom_third_act_name =top_mom["economic_activity"].iloc[-3]
+    mom_first_act_value =top_mom["income"].iloc[-1]
+    mom_second_act_value =top_mom["income"].iloc[-2]
+    mom_third_act_value =top_mom["income"].iloc[-3]
+    
+    X_max = top_yoy["date"].iloc[-1]
 
 
     # fig.text(
     #     0.1,
     #     1,
-    #     "Manufacturing",
+    #     "Services",
     #     size=14,
     #     weight = "bold"
     # )
-    # if language == "en":
-    #     plt.savefig(
-    #     "plots/manufacturing.png",
-    #     dpi=200,
-    #     bbox_inches="tight",
-    #     facecolor="white",
-    #     edgecolor="none",
-    #     transparent=False,
-    # )
-    # else:
-    #     plt.savefig(
-    #     "plots/es_manufacturing.png",
-    #     dpi=200,
-    #     bbox_inches="tight",
-    #     facecolor="white",
-    #     edgecolor="none",
-    #     transparent=False,
-    # )  
-    # 
-    # if language =='en':
-    #     print(f"On {X_max.strftime('%b-%Y')}, the  production value of manufactured products changed by {yoy_production:.2%} YoY; the sales value change came in at {yoy_sales:.2%}. In production value, the top 3 performing economic activities given its MoM rate were {top_production_acts[0]} ({top_production_val[0]:.2%}), {top_production_acts[1]} ({top_production_val[1]:.2%}) and {top_production_acts[2]} ({top_production_val[2]:.2%}); in sales value, {top_sales_acts[0]} ({top_sales_val[0]:.2%}), {top_sales_acts[1]} ({top_sales_val[1]:.2%}) and {top_sales_acts[2]} ({top_sales_val[2]:.2%}) came in at the top.")
-    # else:
-    #     print(f"En {X_max.strftime('%b-%Y')}, el valor de la producción de los productos manufacturados cambió en {yoy_production:.2%} YoY; el valor de las ventas cambió en {yoy_sales:.2%}. En cuanto al valor de la producción, las 3 actividades económicas con mejor desempelo, dada su variacion mensual, fueron {top_production_acts[0]} ({top_production_val[0]:.2%}), {top_production_acts[1]} ({top_production_val[1]:.2%}) and {top_production_acts[2]} ({top_production_val[2]:.2%}); en cuanto al valor de las ventas, {top_sales_acts[0]} ({top_sales_val[0]:.2%}), {top_sales_acts[1]} ({top_sales_val[1]:.2%}) y {top_sales_acts[2]} ({top_sales_val[2]:.2%}) fueron las de mejor desempeño.")
+    if language == "en":
+        plt.savefig(
+        "plots/services.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )
+    else:
+        plt.savefig(
+        "plots/es_services.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )  
+    
+    if language =='en':
+        print(f"On {X_max.strftime('%b-%Y')}, the  economic activities with the most YoY revenue changes were {yoy_first_act_name} ({yoy_first_act_value:.1%}), {yoy_second_act_name} ({yoy_second_act_value:.1%}) and {yoy_third_act_name} ({yoy_third_act_value:.1%}); while the top 3 for MoM revenue changes were {mom_first_act_name} ({mom_first_act_value:.1%}), {mom_second_act_name} ({mom_second_act_value:.1%}) and {mom_third_act_name} ({mom_third_act_value:.1%}).")
+
+    else:
+        print(f"En {X_max.strftime('%b-%Y')}, las actividades económicas con mayor cambio YoY fueron {yoy_first_act_name} ({yoy_first_act_value:.1%}), {yoy_second_act_name} ({yoy_second_act_value:.1%}) y {yoy_third_act_name} ({yoy_third_act_value:.1%}); mientras que el top 3 en cuanto a su variación MoM fueron {mom_first_act_name} ({mom_first_act_value:.1%}), {mom_second_act_name} ({mom_second_act_value:.1%}) and {mom_third_act_name} ({mom_third_act_value:.1%}).")
     
 
 
