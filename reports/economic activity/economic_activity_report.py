@@ -1119,6 +1119,8 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
+
+
 # %%    
 # ------------------------------------------------------------------
 #
@@ -1142,6 +1144,8 @@ def plot_chart_9(from_d="2013-01-01", language="en"):
     ax.xaxis.set_major_locator(mdates.YearLocator(1))
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
     ax.set_ylim(0)
+    
+    
 
     X_max = plot_data["date"].iloc[-1]
     icc_last = plot_data["icc"].iloc[-1]
@@ -1151,6 +1155,15 @@ def plot_chart_9(from_d="2013-01-01", language="en"):
     icc_mom_dif =  icc_last - icc_prev_month
     icc_mom_var = (icc_last / icc_prev_month) -1
         
+    if language =='en':
+        source_text = f"Showing {X_max.strftime('%b')} data for each year"
+    else:
+        source_text = f"Se muestran los datos de {X_max.strftime('%b')} para cada año."
+
+    
+    fig.text(0.13, 0.0, source_text, fontsize=9)
+    
+    
     # fig.text(
     #     0.1,
     #     1,
