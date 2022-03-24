@@ -390,7 +390,59 @@ def get_ems_data(from_d="2008-01-01", language="en", operation ="yoy_growth_rel"
     data.rename(columns={'560fe2a60684221':'income'}, inplace=True)
     return(data)
 
+def get_emoe_data(from_d="2008-01-01", language="en"):
+    payload={
+    "type": "data_table",
+    "operation": "sum",
+    "language": language,
+    "group_by": [
+        "economic_activity"
+    ],
+    "categories": {
+        "economic_activity": [
+            "457155464609a2f",
+            "faa2a8d0af8a72c",
+            "1d0185629b65ee3"
+        ]
+    },
+    "request": [
+        {
+            "table": "mex_inegi_emoe",
+            "variables": [
+                "1b0f1ce9956876e"
+            ]
+        }
+    ],
+    "from": from_d
+    }
+    response = get_tukan_api_request(payload)
+    data = response["data"]
+    data.rename(columns={'1b0f1ce9956876e':'ice'}, inplace=True)
+    return(data)
 
+def get_enco_data(from_d="2008-01-01", language="en"):
+    payload={
+    "type": "data_table",
+    "operation": "sum",
+    "language": language,
+    "group_by": [
+        ""
+    ],
+    "categories": {},
+    "request": [
+        {
+            "table": "mex_inegi_enco_index",
+            "variables": [
+                "f789b42197d3c85"
+            ]
+        }
+    ],
+    "from": from_d
+}
+    response = get_tukan_api_request(payload)
+    data = response["data"]
+    data.rename(columns={'f789b42197d3c85':'icc'}, inplace=True)
+    return(data)
 #%%
 # ----------------------------------
 # Deflate  function
@@ -881,7 +933,7 @@ def plot_chart_5(from_d="2018-01-01", language="en"):
 
 # ------------------------------------------------------------------
 #
-# CHART 6: MANUFACTURING - LINES
+# CHART 6: MANUFACTURING - LINE / BARS
 #
 # ------------------------------------------------------------------
 
@@ -1054,19 +1106,83 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
     )  
     
     if language =='en':
-        print(f"On {X_max.strftime('%b-%Y')}, the  economic activities with the most YoY revenue changes were {yoy_first_act_name} ({yoy_first_act_value:.1%}), {yoy_second_act_name} ({yoy_second_act_value:.1%}) and {yoy_third_act_name} ({yoy_third_act_value:.1%}); while the top 3 for MoM revenue changes were {mom_first_act_name} ({mom_first_act_value:.1%}), {mom_second_act_name} ({mom_second_act_value:.1%}) and {mom_third_act_name} ({mom_third_act_value:.1%}).")
+        print(f"On {X_max.strftime('%b-%Y')}, the  economic activities with the most YoY revenue changes were {yoy_first_act_name} ({yoy_first_act_value:,.1%}), {yoy_second_act_name} ({yoy_second_act_value:,.1%}) and {yoy_third_act_name} ({yoy_third_act_value:,.1%}); while the top 3 for MoM revenue changes were {mom_first_act_name} ({mom_first_act_value:,.1%}), {mom_second_act_name} ({mom_second_act_value:,.1%}) and {mom_third_act_name} ({mom_third_act_value:,.1%}).")
 
     else:
-        print(f"En {X_max.strftime('%b-%Y')}, las actividades económicas con mayor cambio YoY fueron {yoy_first_act_name} ({yoy_first_act_value:.1%}), {yoy_second_act_name} ({yoy_second_act_value:.1%}) y {yoy_third_act_name} ({yoy_third_act_value:.1%}); mientras que el top 3 en cuanto a su variación MoM fueron {mom_first_act_name} ({mom_first_act_value:.1%}), {mom_second_act_name} ({mom_second_act_value:.1%}) and {mom_third_act_name} ({mom_third_act_value:.1%}).")
+        print(f"En {X_max.strftime('%b-%Y')}, las actividades económicas con mayor cambio YoY fueron {yoy_first_act_name} ({yoy_first_act_value:,.1%}), {yoy_second_act_name} ({yoy_second_act_value:,.1%}) y {yoy_third_act_name} ({yoy_third_act_value:,.1%}); mientras que el top 3 en cuanto a su variación MoM fueron {mom_first_act_name} ({mom_first_act_value:,.1%}), {mom_second_act_name} ({mom_second_act_value:,.1%}) and {mom_third_act_name} ({mom_third_act_value:,.1%}).")
     
 
+# %%    
+# ------------------------------------------------------------------
+#
+# CHART 8: BUSINESSES CONFIDENCE - BARS
+#
+# ------------------------------------------------------------------
 
 # %%    
-
 # ------------------------------------------------------------------
 #
-# CHART 8: CONSUMER AND BUSINESS - LINES
+# CHART 9: CONSUMER CONFIDENCE - BARS
 #
 # ------------------------------------------------------------------
 
+def plot_chart_9(from_d="2013-01-01", language="en"):
+    plot_data = get_enco_data(from_d, language)
+    icc_prev_month = plot_data['icc'].iloc[-2]
+    plot_data = plot_data[plot_data['date'].dt.month == plot_data['date'].max().month].reset_index(drop=True)
+    
+    ##### Plot
+    cmap = mpl.cm.get_cmap("GnBu_r", 5)
+    fig = plt.figure(figsize=(8, 4), dpi=200)
+    ax = plt.subplot(111)
+
+
+    ax.bar(plot_data['date'], plot_data['icc'], width=100, color=cmap(0), zorder=3, align="center")
+
+    ax.xaxis.set_major_locator(mdates.YearLocator(1))
+    ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
+    ax.set_ylim(0)
+
+    X_max = plot_data["date"].iloc[-1]
+    icc_last = plot_data["icc"].iloc[-1]
+    icc_2last = plot_data["icc"].iloc[-2]
+    icc_dif =  icc_last - icc_2last
+    icc_var = (icc_last / icc_2last) -1
+    icc_mom_dif =  icc_last - icc_prev_month
+    icc_mom_var = (icc_last / icc_prev_month) -1
+        
+    # fig.text(
+    #     0.1,
+    #     1,
+    #     "Deep Dive - Consumer Confidence Index",
+    #     size=14,
+    #     weight = "bold"
+    # )
+    if language == "en":
+        plt.savefig(
+        "plots/consumer_confidence.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )
+    else:
+        plt.savefig(
+        "plots/es_consumer_confidence.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )  
+
+    # # ---
+    if language == "en":
+        print(f"During {X_max.strftime('%b-%Y')} the Consumer Confidence Indicator changed {icc_dif:.1f} points ({icc_var:.1%}), when comparing it to the same month of last year. The monthly change was {icc_mom_dif:.1f} points ({icc_mom_var:.1%}).")
+    else:
+        print(f"En {X_max.strftime('%b-%Y')} el Índice de Confianza del Consumidor cambió {icc_dif:.1f} puntos ({icc_var:.1%}), al compararlo con el mismo mes del año anterior. La variación mensual fue de {icc_mom_dif:.1f} puntos ({icc_mom_var:.1%}).")
+    
+    
+    
 # %%
