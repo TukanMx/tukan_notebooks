@@ -364,6 +364,33 @@ def get_emim_data(from_d="2013-01-01", language="en", activities=True):
 
     return(data)
 
+def get_ems_data(from_d="2008-01-01", language="en", operation ="yoy_growth_rel"):
+    payload = {
+    "type": "data_table",
+    "operation": operation,
+    "language": language,
+    "group_by": [
+        "economic_activity"
+    ],
+    "categories": {
+        "economic_activity": "all"
+    },
+    "request": [
+        {
+            "table": "mex_inegi_ems",
+            "variables": [
+                "560fe2a60684221"
+            ]
+        }
+    ],
+    "from": from_d
+    }
+    response = get_tukan_api_request(payload)
+    data = response["data"]
+    data.rename(columns={'560fe2a60684221':'income'}, inplace=True)
+    return(data)
+
+
 #%%
 # ----------------------------------
 # Deflate  function
@@ -946,10 +973,80 @@ def plot_chart_6(from_d="2013-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
+def plot_chart_7(from_d="2013-01-01", language="en"):
+    yoy_data = get_ems_data(from_d, language, operation ="yoy_growth_rel")
+    
+    mom_data = get_ems_data(from_d, language, operation ="last_growth_rel")
+    
+    top_mom = mom_data[mom_data['date'] == mom_data['date'].max()].sort_values(by="income", ascending=False).reset_index(drop=True).head(10)
+    
+    top_yoy = yoy_data[yoy_data['date'] == yoy_data['date'].max()].sort_values(by="income", ascending=False).reset_index(drop=True).head(10)
+    
+    # Plot
+    cmap = mpl.cm.get_cmap("GnBu_r", 5)
+    fig = plt.figure(figsize=(8, 4), dpi=200)
+    ax = plt.subplot(111)
+    
+    # if language =='en':
+    #     production = 'Production'
+    #     sales = 'Sales'
+    #     unit = 'Millions of MXN'
+    # else:
+    #     production = 'Producción'
+    #     sales = 'Ventas'
+    #     unit = 'Millones de MXN'
+
+    # ax.plot(agg_data["date"], agg_data["production_value"], color=cmap(0), label = production, zorder=3)
+    # # ax.plot(agg_data["date"], agg_data["sales_value"], color=cmap(2), ls = "--", label=sales)
+    ax.barh(top_yoy["economic_activity"], top_yoy["income"],color=cmap(2), width=20, label="sales", zorder=2)
+    
+    # ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1), ncol=2)
+
+    # ax.set_ylim(0)
+    # ax.xaxis.set_major_locator(mdates.YearLocator(2))
+    # ax.xaxis.set_minor_locator(mdates.YearLocator(1))
+    # ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
+    # plt.ylabel(unit)
+
+
+    # fig.text(
+    #     0.1,
+    #     1,
+    #     "Manufacturing",
+    #     size=14,
+    #     weight = "bold"
+    # )
+    # if language == "en":
+    #     plt.savefig(
+    #     "plots/manufacturing.png",
+    #     dpi=200,
+    #     bbox_inches="tight",
+    #     facecolor="white",
+    #     edgecolor="none",
+    #     transparent=False,
+    # )
+    # else:
+    #     plt.savefig(
+    #     "plots/es_manufacturing.png",
+    #     dpi=200,
+    #     bbox_inches="tight",
+    #     facecolor="white",
+    #     edgecolor="none",
+    #     transparent=False,
+    # )  
+    # 
+    # if language =='en':
+    #     print(f"On {X_max.strftime('%b-%Y')}, the  production value of manufactured products changed by {yoy_production:.2%} YoY; the sales value change came in at {yoy_sales:.2%}. In production value, the top 3 performing economic activities given its MoM rate were {top_production_acts[0]} ({top_production_val[0]:.2%}), {top_production_acts[1]} ({top_production_val[1]:.2%}) and {top_production_acts[2]} ({top_production_val[2]:.2%}); in sales value, {top_sales_acts[0]} ({top_sales_val[0]:.2%}), {top_sales_acts[1]} ({top_sales_val[1]:.2%}) and {top_sales_acts[2]} ({top_sales_val[2]:.2%}) came in at the top.")
+    # else:
+    #     print(f"En {X_max.strftime('%b-%Y')}, el valor de la producción de los productos manufacturados cambió en {yoy_production:.2%} YoY; el valor de las ventas cambió en {yoy_sales:.2%}. En cuanto al valor de la producción, las 3 actividades económicas con mejor desempelo, dada su variacion mensual, fueron {top_production_acts[0]} ({top_production_val[0]:.2%}), {top_production_acts[1]} ({top_production_val[1]:.2%}) and {top_production_acts[2]} ({top_production_val[2]:.2%}); en cuanto al valor de las ventas, {top_sales_acts[0]} ({top_sales_val[0]:.2%}), {top_sales_acts[1]} ({top_sales_val[1]:.2%}) y {top_sales_acts[2]} ({top_sales_val[2]:.2%}) fueron las de mejor desempeño.")
+    
+
+
+# %%    
 
 # ------------------------------------------------------------------
 #
-# CHART 7: CONSUMER AND BUSINESS - LINES
+# CHART 8: CONSUMER AND BUSINESS - LINES
 #
 # ------------------------------------------------------------------
 
