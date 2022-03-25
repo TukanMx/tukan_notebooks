@@ -329,7 +329,6 @@ def get_emim_data(from_d="2013-01-01", language="en", activities=True):
         }
         response = get_tukan_api_request(payload)
         data = response["data"]
-        data.rename(columns={'3600ee1d0eabc88':'sales_value','86336e63b802373':'production_value'}, inplace=True)
     else:
         payload = {
         "type": "data_table",
@@ -358,9 +357,9 @@ def get_emim_data(from_d="2013-01-01", language="en", activities=True):
         }
         response = get_tukan_api_request(payload)
         data = response["data"]
-        data.rename(columns={'3600ee1d0eabc88':'sales_value','86336e63b802373':'production_value'}, inplace=True)
-        data['sales_value'] = data['sales_value']/1000000
-        data['production_value'] = data['production_value']/1000000    
+    data.rename(columns={'3600ee1d0eabc88':'sales_value','86336e63b802373':'production_value'}, inplace=True)
+    data['sales_value'] = data['sales_value']/1000000
+    data['production_value'] = data['production_value']/1000000    
 
     return(data)
 
@@ -388,6 +387,10 @@ def get_ems_data(from_d="2008-01-01", language="en", operation ="yoy_growth_rel"
     response = get_tukan_api_request(payload)
     data = response["data"]
     data.rename(columns={'560fe2a60684221':'income'}, inplace=True)
+    
+    second_level_acts = ["1d0185629b65ee3","29daaeb36fea1ab","36348912d8470dd","3726993cc9fecab","44d246411040129","457155464609a2f","4adeefc3d481a07","4bc9836c2d7e60a","6b36ca46b6cfd91","990b94ebe38c9ca","a07267f78158c2c","aa2e62d86204fee","afaceb85ed568ca","afcc312ccddfcc1","bbb49ae78601ab9","be676b5dd921cb7","c2c32762f1f055c","d05c3b2b73d75fc","d35f5b82779e7d5","e426cc87d0540ab","f5adaadda584ca7","faa2a8d0af8a72c","fcb303b72a98f6c","feb7bb4445c808d"]
+    data = data[data["economic_activity__ref"].isin(second_level_acts)].reset_index(drop=True)
+    
     return(data)
 
 def get_emoe_data(from_d="2008-01-01", language="en"):
@@ -443,6 +446,7 @@ def get_enco_data(from_d="2008-01-01", language="en"):
     data = response["data"]
     data.rename(columns={'f789b42197d3c85':'icc'}, inplace=True)
     return(data)
+
 #%%
 # ----------------------------------
 # Deflate  function
@@ -549,6 +553,7 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
         print(f"During {X_max.strftime('%b-%Y')} the annual change came in at {Y_end:.1%} and the monthly change at {Y_mom:.1%}; The previus YoY rate was {Y_end_prevmonth:.1%} while MoM was {Y_mom_prevmonth:.1%}.")
     else:
         print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {Y_end:.1%} y la mensual de {Y_mom:.1%}; la variación anual anterior fue de {Y_end_prevmonth:.1%}, mientras que la mensual fue de {Y_mom_prevmonth:.1%}.")
+
 # ------------------------------------------------------------------
 #
 # CHART 2: YOY CHANGE IN IGAE SECTORS - BARS
@@ -822,7 +827,6 @@ def plot_chart_4(from_d="2016-01-01", language="en"):
     else :
         print(f"Durante {max_date.strftime('%b-%Y')} las actividades económicas con mejor desempeño fueron {acts[2]} ({growth_mom[2]:.1%}), {acts[1]} ({growth_mom[1]:.1%}) y {acts[0]} ({growth_mom[0]:.1%}).")
 
-
 # ------------------------------------------------------------------
 #
 # CHART 5: CONSTRUCTION - BARS
@@ -904,7 +908,6 @@ def plot_chart_5(from_d="2018-01-01", language="en"):
     else:
         print(f"Durante {X_max.strftime('%b-%Y')}, la variación anual fue de {yoy_var:.1%} y la mensual de {mom_var:.1%}.")
     
-
 # def plot_construction_labor(from_d="2006-01-01", language="en"):
 #     work_data = get_labour_enec_data(from_d,language)
 #     work_data['workforce'] = work_data['14066e939239b6e'] + work_data['62a2aecf0193aac'] + + work_data['74e4b5f7542fc3f'] + work_data['f12649252c82ff0']
@@ -977,13 +980,13 @@ def plot_chart_6(from_d="2013-01-01", language="en"):
 
     ax.plot(agg_data["date"], agg_data["production_value"], color=cmap(0), label = production, zorder=3)
     # ax.plot(agg_data["date"], agg_data["sales_value"], color=cmap(2), ls = "--", label=sales)
-    ax.bar(agg_data["date"], agg_data["sales_value"],color=cmap(2), width=20, label=sales, zorder=2)
+    ax.bar(agg_data["date"], agg_data["production_value"],color=cmap(2), width=20, label=sales, zorder=2)
     
-    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1), ncol=2)
+    # ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1), ncol=2)
 
     ax.set_ylim(0)
-    ax.xaxis.set_major_locator(mdates.YearLocator(2))
-    ax.xaxis.set_minor_locator(mdates.YearLocator(1))
+    ax.xaxis.set_major_locator(mdates.YearLocator(1))
+    # ax.xaxis.set_minor_locator(mdates.YearLocator(1))
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
     plt.ylabel(unit)
 
@@ -1018,8 +1021,7 @@ def plot_chart_6(from_d="2013-01-01", language="en"):
         print(f"On {X_max.strftime('%b-%Y')}, the  production value of manufactured products changed by {yoy_production:.1%} YoY; the sales value change came in at {yoy_sales:.1%}. In production value, the top 3 performing economic activities given its MoM rate were {top_production_acts[0]} ({top_production_val[0]:.1%}), {top_production_acts[1]} ({top_production_val[1]:.1%}) and {top_production_acts[2]} ({top_production_val[2]:.1%}); in sales value, {top_sales_acts[0]} ({top_sales_val[0]:.1%}), {top_sales_acts[1]} ({top_sales_val[1]:.1%}) and {top_sales_acts[2]} ({top_sales_val[2]:.1%}) came in at the top.")
     else:
         print(f"En {X_max.strftime('%b-%Y')}, el valor de la producción de los productos manufacturados cambió en {yoy_production:.1%} YoY; el valor de las ventas cambió en {yoy_sales:.1%}. En cuanto al valor de la producción, las 3 actividades económicas con mejor desempelo, dada su variacion mensual, fueron {top_production_acts[0]} ({top_production_val[0]:.1%}), {top_production_acts[1]} ({top_production_val[1]:.1%}) and {top_production_acts[2]} ({top_production_val[2]:.1%}); en cuanto al valor de las ventas, {top_sales_acts[0]} ({top_sales_val[0]:.1%}), {top_sales_acts[1]} ({top_sales_val[1]:.1%}) y {top_sales_acts[2]} ({top_sales_val[2]:.1%}) fueron las de mejor desempeño.")
-    
-# %%    
+       
 # ------------------------------------------------------------------
 #
 # CHART 7: SERVICES - BARS
@@ -1035,26 +1037,23 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
     top_mom = top_mom.sort_values(by="income").reset_index(drop=True)
     top_yoy = yoy_data[yoy_data['date'] == yoy_data['date'].max()].sort_values(by="income", ascending=False).reset_index(drop=True).head(10)
     top_yoy = top_yoy.sort_values(by="income").reset_index(drop=True)
-    if language == 'en':
-        top_yoy.replace({'Hotels with other integrated services':'Hotels and Resorts','Amusement parks and theme parks of the private sector':'Amusement and theme parks','Water parks and spas in the private sector':'Water parks and spas','Bars, canteens and similar':'Bars','Botanical and zoological gardens of the private sector':'Botanical and zoological gardens','Nightclubs, discos and similar':'Nightclubs','Museums in the private sector':'Museums','Agents and managers for artists, athletes, entertainers, and other public figures':'Agents and managers','General secondary education schools in the private sector':'Secondary education','Commercial air, rail, and water transportation equipment rental and leasing':'Transportation equipment rental and leasing', 'Local messengers and local delivery':'Local messengers and delivery','Scientific research and development in social sciences and humanities, provided by the private sector':'Scientific research','Display movies and other audiovisual materials':'Movies exhibition','Motion picture and video distribution':'Movies distribution','Other schools and instruction':'Other educational services'},inplace=True)
-
-        top_mom.replace({'Hotels with other integrated services':'Hotels and Resorts','Amusement parks and theme parks of the private sector':'Amusement and theme parks','Water parks and spas in the private sector':'Water parks and spas','Bars, canteens and similar':'Bars','Botanical and zoological gardens of the private sector':'Botanical and zoological gardens','Nightclubs, discos and similar':'Nightclubs','Museums in the private sector':'Museums','Agents and managers for artists, athletes, entertainers, and other public figures':'Agents and managers','General secondary education schools in the private sector':'Secondary education','Commercial air, rail, and water transportation equipment rental and leasing':'Transportation equipment rental and leasing', 'Local messengers and local delivery':'Local messengers and delivery','Scientific research and development in social sciences and humanities, provided by the private sector':'Scientific research','Display movies and other audiovisual materials':'Movies exhibition','Motion picture and video distribution':'Movies distribution','Other schools and instruction':'Other educational services'},inplace=True)
+    if language == "en":
+        top_yoy = top_yoy.replace({'Other services (except public administration)':'Other services','Governmental, legislative activities of law enforcement and international and extraterritorial bodies':'Governmental and legislative services','Administrative and support and waste management and remediation services':'Administrative and waste management services', 'Information':'Media'})
+        top_mom = top_mom.replace({'Other services (except public administration)':'Other services','Governmental, legislative activities of law enforcement and international and extraterritorial bodies':'Governmental and legislative services','Administrative and support and waste management and remediation services':'Administrative and waste management services', 'Information':'Media'})
     else:
-        top_yoy.replace({'Hoteles con otros servicios integrados':'Hoteles y resorts','Escuelas de educación secundaria general del sector privado':'Educación secundaria',
-       'Organizadores de convenciones y ferias comerciales e industriales':'Organizadores de convenciones y ferias', 'Parques de diversiones y temáticos del sector privado':'Parques de diversiones','Parques acuáticos y balnearios del sector privado':'Parques acuáticos y balnearios',
-       'Bares, cantinas y similares':'Bares y cantinas','Jardines botánicos y zoológicos del sector privado':'Jardines botánicos y zoológicos','Centros nocturnos, discotecas y similares':'Discotecas','Museos del sector privado':'Museos','Agentes y representantes de artistas, deportistas y similares':'Agentes y representantes','Distribución de películas y de otros materiales audiovisuales':'Distribución de películas','Exhibición de películas y otros materiales audiovisuales':'Exhibición de películas','Alquiler de maquinaria y equipo para construcción, minería y actividades forestales':'Alquier de maquinaria y equipo', 'Edición de software y edición de software integrada con la reproducción':'Edición de software',  'Servicios de investigación científica y desarrollo en ciencias sociales y humanidades, prestados por el sector privado':'Investigación científica'},inplace=True)
-    
-        top_mom.replace({'Hoteles con otros servicios integrados':'Hoteles y resorts','Escuelas de educación secundaria general del sector privado':'Educación secundaria',
-       'Organizadores de convenciones y ferias comerciales e industriales':'Organizadores de convenciones y ferias', 'Parques de diversiones y temáticos del sector privado':'Parques de diversiones','Parques acuáticos y balnearios del sector privado':'Parques acuáticos y balnearios',
-       'Bares, cantinas y similares':'Bares y cantinas','Jardines botánicos y zoológicos del sector privado':'Jardines botánicos y zoológicos','Centros nocturnos, discotecas y similares':'Discotecas','Museos del sector privado':'Museos','Agentes y representantes de artistas, deportistas y similares':'Agentes y representantes','Distribución de películas y de otros materiales audiovisuales':'Distribución de películas','Exhibición de películas y otros materiales audiovisuales':'Exhibición de películas','Alquiler de maquinaria y equipo para construcción, minería y actividades forestales':'Alquier de maquinaria y equipo', 'Edición de software y edición de software integrada con la reproducción':'Edición de software',  'Servicios de investigación científica y desarrollo en ciencias sociales y humanidades, prestados por el sector privado':'Investigación científica'},inplace=True)
-    
+        top_yoy = top_yoy.replace({'Servicios de esparcimiento culturales y deportivos, y otros servicios recreativos':'Serv. de esparcimiento y recreativos','Generación, transmisión, distribución y comercialización de energía eléctrica, suministro de agua y de gas natural por ductos al consumidor final':'Energía, suministro de agua y gas natural','Servicios de alojamiento temporal y de preparación de alimentos y bebidas':'Hoteles y Restaurantes','Otros servicios excepto actividades gubernamentales':'Otros servicios','Agricultura, cría y explotación de animales, aprovechamiento forestal, pesca y caza':'Agricultura, ganadería, pesca y acts. forestales','Servicios de apoyo a los negocios y manejo de residuos, y servicios de remediación':'Serv. de apoyo a los negocios y manejo de residuos','Actividades legislativas, gubernamentales, de impartición de justicia y de organismos internacionales y extraterritoriales':'Acts. gubernamentales y legislativas','Servicios inmobiliarios y de alquiler de bienes muebles e intangibles':'Serv. inmobiliarios y alquiler de bienes','Servicios de salud y de asistencia social':'Serv. sociales y de salud','Servicios profesionales, científicos y técnicos':'Serv. profesionales, científicos y técnicos','Servicios educativos':'Serv. educativos','Servicios financieros y de seguros':'Serv. financieros y de seguros'})
+        top_mom = top_mom.replace({'Servicios de esparcimiento culturales y deportivos, y otros servicios recreativos':'Serv. de esparcimiento y recreativos','Generación, transmisión, distribución y comercialización de energía eléctrica, suministro de agua y de gas natural por ductos al consumidor final':'Energía, suministro de agua y gas natural','Servicios de alojamiento temporal y de preparación de alimentos y bebidas':'Hoteles y Restaurantes','Otros servicios excepto actividades gubernamentales':'Otros servicios','Agricultura, cría y explotación de animales, aprovechamiento forestal, pesca y caza':'Agricultura, ganadería, pesca y acts. forestales','Servicios de apoyo a los negocios y manejo de residuos, y servicios de remediación':'Serv. de apoyo a los negocios y manejo de residuos','Actividades legislativas, gubernamentales, de impartición de justicia y de organismos internacionales y extraterritoriales':'Acts. gubernamentales y legislativas','Servicios inmobiliarios y de alquiler de bienes muebles e intangibles':'Serv. inmobiliarios y alquiler de bienes','Servicios de salud y de asistencia social':'Serv. sociales y de salud','Servicios profesionales, científicos y técnicos':'Serv. profesionales, científicos y técnicos','Servicios educativos':'Serv. educativos','Servicios financieros y de seguros':'Serv. financieros y de seguros'})
     # Plot
     cmap = mpl.cm.get_cmap("GnBu_r", 5)
     fig = plt.figure(figsize=(11, 4), dpi=200)
     ax1 = plt.subplot(121)
     ax2 = plt.subplot(122)
     ax1.barh(top_yoy["economic_activity"], top_yoy["income"],color=cmap(0), label="sales", zorder=2)
+    ax1.axvline(x=0,lw=1, color='black')
+
     ax2.barh(top_mom["economic_activity"], top_mom["income"],color=cmap(2), label="sales", zorder=2)
+    ax2.axvline(x=0,lw=1, color='black')
+
     # plt.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9,wspace=1.5,hspace=1)
     fig.tight_layout()
 
@@ -1111,9 +1110,7 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
 
     else:
         print(f"En {X_max.strftime('%b-%Y')}, las actividades económicas con mayor cambio YoY fueron {yoy_first_act_name} ({yoy_first_act_value:,.1%}), {yoy_second_act_name} ({yoy_second_act_value:,.1%}) y {yoy_third_act_name} ({yoy_third_act_value:,.1%}); mientras que el top 3 en cuanto a su variación MoM fueron {mom_first_act_name} ({mom_first_act_value:,.1%}), {mom_second_act_name} ({mom_second_act_value:,.1%}) and {mom_third_act_name} ({mom_third_act_value:,.1%}).")
-    
-
-# %%    
+       
 # ------------------------------------------------------------------
 #
 # CHART 8: BUSINESS CONFIDENCE - BARS
@@ -1229,8 +1226,7 @@ def plot_chart_8(from_d="2013-01-01", language="en"):
 
     else:
         print(f"En {X_max.strftime('%b-%Y')}, la variación YoY en el Indicador de Confianza Emmpresarial fue de {yoy_trade_diff:.1f} points ({yoy_trade_var:.1%}) para las actividades de {economic_activities[0]},{yoy_construction_diff:.1f} puntos ({yoy_construction_var:.1%}) para las de {economic_activities[1]}, y {yoy_manufacturing_diff:.1f} puntos ({yoy_manufacturing_var:.1%}) para {economic_activities[2]}.\nLa variación MoM fue de {mom_trade_diff:.1f} puntos ({mom_trade_var:.1%}) para las actividades de {economic_activities[0]}, de {mom_construction_diff:.1f} puntos ({mom_construction_var:.1%}) para las de {economic_activities[1]} y de {mom_manufacturing_diff:.1f} puntos ({mom_manufacturing_var:.1%}) para {economic_activities[2]}.")
-
-# %%    
+  
 # ------------------------------------------------------------------
 #
 # CHART 9: CONSUMER CONFIDENCE - BARS
@@ -1247,14 +1243,13 @@ def plot_chart_9(from_d="2013-01-01", language="en"):
     fig = plt.figure(figsize=(8, 4), dpi=200)
     ax = plt.subplot(111)
 
-
-    ax.bar(plot_data['date'], plot_data['icc'], width=100, color=cmap(0), zorder=3, align="center")
+    ax.bar(plot_data['date'], plot_data['icc'], width=150, color=cmap(0), zorder=3, align="center")
+    # ax.plot(plot_data['date'], plot_data['icc'], color=cmap(0), zorder=3)
 
     ax.xaxis.set_major_locator(mdates.YearLocator(1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
     ax.set_ylim(0)
-    
-    
 
     X_max = plot_data["date"].iloc[-1]
     icc_last = plot_data["icc"].iloc[-1]
@@ -1270,7 +1265,7 @@ def plot_chart_9(from_d="2013-01-01", language="en"):
         source_text = f"Se muestran los datos de {X_max.strftime('%B')} para cada año."
 
     
-    fig.text(0.13, 0.0, source_text, fontsize=9)
+    # fig.text(0.13, 0.0, source_text, fontsize=9)
     
     
     # fig.text(
@@ -1304,7 +1299,5 @@ def plot_chart_9(from_d="2013-01-01", language="en"):
         print(f"During {X_max.strftime('%b-%Y')} the Consumer Confidence Indicator changed {icc_dif:.1f} points ({icc_var:.1%}), when comparing it to the same month of last year. The monthly change was {icc_mom_dif:.1f} points ({icc_mom_var:.1%}).")
     else:
         print(f"En {X_max.strftime('%b-%Y')} el Índice de Confianza del Consumidor cambió {icc_dif:.1f} puntos ({icc_var:.1%}), al compararlo con el mismo mes del año anterior. La variación mensual fue de {icc_mom_dif:.1f} puntos ({icc_mom_var:.1%}).")
-    
-    
-    
+
 # %%
