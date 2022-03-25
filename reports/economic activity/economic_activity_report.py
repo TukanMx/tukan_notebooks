@@ -447,6 +447,35 @@ def get_enco_data(from_d="2008-01-01", language="en"):
     data.rename(columns={'f789b42197d3c85':'icc'}, inplace=True)
     return(data)
 
+def get_inpp_construction_data(from_d="2000-01-01", language="en"):
+    payload= {
+    "type": "data_table",
+    "operation": "sum",
+    "language": language,
+    "group_by": [
+        "product"
+    ],
+    "categories": {
+        "product": [
+            "193b800af2978be"
+        ]
+    },
+    "request": [
+        {
+            "table": "mex_inegi_inpp_construction_product",
+            "variables": [
+                "08c24466faffc9c"
+            ]
+        }
+    ],
+    "from": from_d
+    }
+    response = get_tukan_api_request(payload)
+    data = response["data"]
+    data.rename(columns={'08c24466faffc9c':'inpp'}, inplace=True)
+    data.drop(columns=['product__ref','product'], inplace=True)
+    return(data)
+
 #%%
 # ----------------------------------
 # Deflate  function
@@ -457,7 +486,7 @@ from_d = "2000-01-01"
 base_date = "2018-11-01"
 deflate_date = "2021-02-01"
 
-def benchmark_deflate(df, id="column_name", base_date = "2018-11-01"):
+def benchmark_deflate_inpc(df, id="column_name", base_date = "2018-11-01"):
     deflate = get_inpc_data(from_d = "2000-01-01", language = "en")
     def_base = deflate[deflate['date']==base_date]
     def_val = def_base.iloc[-1][3]
@@ -471,6 +500,25 @@ def benchmark_deflate(df, id="column_name", base_date = "2018-11-01"):
     final_df.drop(columns='def_val',inplace=True)
     # delete var def_val 
     return(final_df)
+
+def deflate_inpp_construction(df, id="column_names", base_date="2013-01-01"):
+    deflate = get_inpp_construction_data(from_d="2000-01-01", language="en")
+    def_base = deflate[deflate['date']==base_date]
+    def_val = def_base.iloc[-1][1]
+    deflate['def_val'] = deflate['inpp'] / def_val
+    deflate = deflate[['date','def_val']].iloc[:]
+    deflate.dropna(inplace=True)
+    deflate.reset_index(inplace=True,drop=True)
+    final_df = df.merge(deflate, how='left', on='date')
+    for column in id:
+        newcol_name = 'deflated_'+str(column)
+        final_df[newcol_name] = final_df[column] / final_df['def_val']
+    
+    final_df.drop(columns='def_val',inplace=True)
+    
+    return(final_df)
+
+    
 
 ##########################################    
 ## plot sample ## 
@@ -853,10 +901,11 @@ def plot_chart_5(from_d="2018-01-01", language="en"):
         specialty = 'Trabajos especializados'
         unit = 'Millones de MXN'
     data.rename(columns={'14edc470d8f3e2f':civil,'222bc7bc27c6906':specialty,'4382bc56abc3b3b':buildings,'457155464609a2f':construction}, inplace=True)
+    plot_data = deflate_inpp_construction(data, id=[construction,civil,buildings,specialty], base_date="2013-01-01")
     
-    mom_var = (data[construction].iloc[-1] / data[construction].iloc[-2])-1
-    yoy_var = (data[construction].iloc[-1] / data[construction].iloc[-13])-1
-    X_max = data["date"].iloc[-1]
+    mom_var = (plot_data[f"deflated_{construction}"].iloc[-1] / plot_data[f"deflated_{construction}"].iloc[-2])-1
+    yoy_var = (plot_data[f"deflated_{construction}"].iloc[-1] / plot_data[f"deflated_{construction}"].iloc[-13])-1
+    X_max = plot_data["date"].iloc[-1]
 
     
     ##### Plot
@@ -865,9 +914,9 @@ def plot_chart_5(from_d="2018-01-01", language="en"):
     ax = plt.subplot(111)
 
     width = 20      
-    p1 = ax.bar(data['date'], data[buildings], width, color=cmap(1), zorder=3)
-    p2 = ax.bar(data['date'], data[civil], width,  bottom= data[buildings], color=cmap(2), zorder=3)
-    p3 = ax.bar(data['date'], data[specialty], width,  bottom=data[buildings]+data[civil], color=cmap(0), zorder=3)
+    p1 = ax.bar(plot_data['date'], plot_data[f"deflated_{buildings}"], width, color=cmap(1), zorder=3)
+    p2 = ax.bar(plot_data['date'], plot_data[f"deflated_{civil}"], width,  bottom= plot_data[f"deflated_{buildings}"], color=cmap(2), zorder=3)
+    p3 = ax.bar(plot_data['date'], plot_data[f"deflated_{specialty}"], width,  bottom=plot_data[f"deflated_{buildings}"]+plot_data[f"deflated_{civil}"], color=cmap(0), zorder=3)
 
     ax.legend((p1[0], p2[0], p3[0]), (buildings, civil, specialty),loc="lower center", bbox_to_anchor=(0.5, 1), ncol=3)
 
