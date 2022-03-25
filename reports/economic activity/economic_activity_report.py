@@ -3,6 +3,7 @@
 # We load fonts and stylesheet.
 # ----------------------------------
 import datetime
+from logging import exception
 from turtle import width
 import matplotlib.dates as mdates
 # from matplotlib.lines import _LineStyle
@@ -327,8 +328,6 @@ def get_emim_data(from_d="2013-01-01", language="en", activities=True):
         ],
         "from": from_d
         }
-        response = get_tukan_api_request(payload)
-        data = response["data"]
     else:
         payload = {
         "type": "data_table",
@@ -355,8 +354,17 @@ def get_emim_data(from_d="2013-01-01", language="en", activities=True):
         ],
         "from": from_d
         }
+    try:
         response = get_tukan_api_request(payload)
         data = response["data"]
+    except Exception as e:
+        print(e)
+        from_d = '2021-01-01'
+        payload.update({"from":from_d})
+        response = get_tukan_api_request(payload)
+        data = response["data"]
+        print(f"Getting data from {from_d}")
+   
     data.rename(columns={'3600ee1d0eabc88':'sales_value','86336e63b802373':'production_value'}, inplace=True)
     data['sales_value'] = data['sales_value']/1000000
     data['production_value'] = data['production_value']/1000000    
@@ -478,13 +486,13 @@ def get_inpp_construction_data(from_d="2000-01-01", language="en"):
 
 #%%
 # ----------------------------------
-# Deflate  function
+# Deflate  functions
 # ----------------------------------
 # Variables
-language = "en"
-from_d = "2000-01-01"
-base_date = "2018-11-01"
-deflate_date = "2021-02-01"
+# language = "en"
+# from_d = "2000-01-01"
+# base_date = "2018-11-01"
+# deflate_date = "2021-02-01"
 
 def benchmark_deflate_inpc(df, id="column_name", base_date = "2018-11-01"):
     deflate = get_inpc_data(from_d = "2000-01-01", language = "en")
@@ -881,7 +889,7 @@ def plot_chart_4(from_d="2016-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_5(from_d="2018-01-01", language="en"):
+def plot_chart_5(from_d="2013-01-01", language="en"):
     data = get_enec_data(from_d, language)
     data = data.rename(columns={"e721ea412d5cbc1":"production_value"})
     data['production_value'] = data['production_value'] / 1000000
@@ -1295,7 +1303,7 @@ def plot_chart_9(from_d="2013-01-01", language="en"):
     ax.bar(plot_data['date'], plot_data['icc'], width=150, color=cmap(0), zorder=3, align="center")
     # ax.plot(plot_data['date'], plot_data['icc'], color=cmap(0), zorder=3)
 
-    ax.xaxis.set_major_locator(mdates.YearLocator(1))
+    ax.xaxis.set_major_locator(mdates.MonthLocator(plot_data['date'].max().month))
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
     ax.set_ylim(0)
