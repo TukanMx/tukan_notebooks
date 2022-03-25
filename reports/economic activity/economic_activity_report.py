@@ -321,8 +321,7 @@ def get_emim_data(from_d="2013-01-01", language="en", activities=True):
             {
                 "table": "mex_inegi_emim_variables",
                 "variables": [
-                    "86336e63b802373",
-                    "3600ee1d0eabc88"
+                    "86336e63b802373"
                 ]
             }
         ],
@@ -347,8 +346,7 @@ def get_emim_data(from_d="2013-01-01", language="en", activities=True):
             {
                 "table": "mex_inegi_emim_variables",
                 "variables": [
-                    "86336e63b802373",
-                    "3600ee1d0eabc88"
+                    "86336e63b802373"
                 ]
             }
         ],
@@ -365,8 +363,7 @@ def get_emim_data(from_d="2013-01-01", language="en", activities=True):
         data = response["data"]
         print(f"Getting data from {from_d}")
    
-    data.rename(columns={'3600ee1d0eabc88':'sales_value','86336e63b802373':'production_value'}, inplace=True)
-    data['sales_value'] = data['sales_value']/1000000
+    data.rename(columns={'86336e63b802373':'production_value'}, inplace=True)
     data['production_value'] = data['production_value']/1000000    
 
     return(data)
@@ -999,26 +996,13 @@ def plot_chart_5(from_d="2013-01-01", language="en"):
 # ------------------------------------------------------------------
 
 def plot_chart_6(from_d="2013-01-01", language="en"):
-    activities_data = get_emim_data(from_d, language, activities=True)
     agg_data = get_emim_data(from_d, language, activities=False)
-    
-    # Activities data
-    activities_data = activities_data[activities_data['date']==activities_data['date'].max()]
-    activities_data.reset_index(inplace=True,drop=True)
-    # Top 3 MoM growth for sales
-    activities_data = activities_data.sort_values(by="sales_value", ascending=False).reset_index(drop=True)
-    top_sales_acts = activities_data.head(3)['economic_activity'].tolist()
-    top_sales_val = activities_data.head(3)['sales_value'].tolist()
-    # Top 3 MoM growth for production 
-    activities_data = activities_data.sort_values(by="production_value", ascending=False).reset_index(drop=True)
-    top_production_acts = activities_data.head(3)['economic_activity'].tolist()
-    top_production_val = activities_data.head(3)['production_value'].tolist()
-    
+        
     # Aggregated data
-    agg_data['yoy_sales'] = (agg_data['sales_value'] / agg_data['sales_value'].shift(12))-1
     agg_data['yoy_production'] = (agg_data['production_value'] / agg_data['production_value'].shift(12))-1
-    yoy_sales = agg_data['yoy_sales'].iloc[-1]
+    agg_data['mom_production'] = (agg_data['production_value'] / agg_data['production_value'].shift(1))-1
     yoy_production = agg_data['yoy_production'].iloc[-1]
+    mom_production = agg_data['mom_production'].iloc[-1]
     X_max = agg_data["date"].iloc[-1]
     
     # Plot
@@ -1028,16 +1012,13 @@ def plot_chart_6(from_d="2013-01-01", language="en"):
     
     if language =='en':
         production = 'Production'
-        sales = 'Sales'
         unit = 'Millions of MXN'
     else:
         production = 'Producción'
-        sales = 'Ventas'
         unit = 'Millones de MXN'
 
     ax.plot(agg_data["date"], agg_data["production_value"], color=cmap(0), label = production, zorder=3)
-    # ax.plot(agg_data["date"], agg_data["sales_value"], color=cmap(2), ls = "--", label=sales)
-    ax.bar(agg_data["date"], agg_data["production_value"],color=cmap(2), width=20, label=sales, zorder=2)
+    ax.bar(agg_data["date"], agg_data["production_value"],color=cmap(2), width=20, label=production, zorder=2)
     
     # ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1), ncol=2)
 
@@ -1075,9 +1056,9 @@ def plot_chart_6(from_d="2013-01-01", language="en"):
     )  
     
     if language =='en':
-        print(f"On {X_max.strftime('%b-%Y')}, the  production value of manufactured products changed by {yoy_production:.1%} YoY; the sales value change came in at {yoy_sales:.1%}. In production value, the top 3 performing economic activities given its MoM rate were {top_production_acts[0]} ({top_production_val[0]:.1%}), {top_production_acts[1]} ({top_production_val[1]:.1%}) and {top_production_acts[2]} ({top_production_val[2]:.1%}); in sales value, {top_sales_acts[0]} ({top_sales_val[0]:.1%}), {top_sales_acts[1]} ({top_sales_val[1]:.1%}) and {top_sales_acts[2]} ({top_sales_val[2]:.1%}) came in at the top.")
+        print(f"On {X_max.strftime('%b-%Y')}, the  production value of manufactured products changed by {yoy_production:.1%} YoY; the MoM rate was {mom_production:.1%}.")
     else:
-        print(f"En {X_max.strftime('%b-%Y')}, el valor de la producción de los productos manufacturados cambió en {yoy_production:.1%} YoY; el valor de las ventas cambió en {yoy_sales:.1%}. En cuanto al valor de la producción, las 3 actividades económicas con mejor desempelo, dada su variacion mensual, fueron {top_production_acts[0]} ({top_production_val[0]:.1%}), {top_production_acts[1]} ({top_production_val[1]:.1%}) and {top_production_acts[2]} ({top_production_val[2]:.1%}); en cuanto al valor de las ventas, {top_sales_acts[0]} ({top_sales_val[0]:.1%}), {top_sales_acts[1]} ({top_sales_val[1]:.1%}) y {top_sales_acts[2]} ({top_sales_val[2]:.1%}) fueron las de mejor desempeño.")
+        print(f"En {X_max.strftime('%b-%Y')}, el valor de la producción de los productos manufacturados cambió en {yoy_production:.1%} YoY; la tasa MoM fue de {mom_production:.1%}.")
        
 # ------------------------------------------------------------------
 #
@@ -1280,7 +1261,7 @@ def plot_chart_8(from_d="2013-01-01", language="en", previous_month =False):
 
     # # ---
     if language == "en":
-        print(f"During {X_max.strftime('%b-%Y')}, the YoY change in the Business Confidence Indicator (ICE) for {economic_activities[0]} companies was {yoy_trade_diff:.1f} points ({yoy_trade_var:.1%}),{yoy_construction_diff:.1f} points ({yoy_construction_var:.1%}) for {economic_activities[1]}, and {yoy_manufacturing_diff:.1f} points ({yoy_manufacturing_var:.1%}) for {economic_activities[2]} companies.\nThe MoM change was {mom_trade_diff:.1f} points ({mom_trade_var:.1%}, {mom_construction_diff:.1f} points ({mom_construction_var:.1%}), and {mom_manufacturing_diff:.1f} points ({mom_manufacturing_var:.1%}) for {economic_activities[0]}, {economic_activities[1]} and {economic_activities[2]} companies, respectively.") 
+        print(f"During {X_max.strftime('%b-%Y')}, the YoY change in the Business Confidence Indicator (ICE) for {economic_activities[0]} companies was {yoy_trade_diff:.1f} points ({yoy_trade_var:.1%}),{yoy_construction_diff:.1f} points ({yoy_construction_var:.1%}) for {economic_activities[1]}, and {yoy_manufacturing_diff:.1f} points ({yoy_manufacturing_var:.1%}) for {economic_activities[2]} companies.\nThe MoM change was {mom_trade_diff:.1f} points ({mom_trade_var:.1%}), {mom_construction_diff:.1f} points ({mom_construction_var:.1%}), and {mom_manufacturing_diff:.1f} points ({mom_manufacturing_var:.1%}) for {economic_activities[0]}, {economic_activities[1]} and {economic_activities[2]} companies, respectively.") 
         
 
     else:
