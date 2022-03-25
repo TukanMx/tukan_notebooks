@@ -570,6 +570,7 @@ def plot_chart_2(from_d="2020-11-01", language="en"):
     data = data.pivot(index='date',columns='economic_activity', values='mom_igae')
     data.reset_index(inplace=True)
 
+    # Plot
     cmap = mpl.cm.get_cmap("GnBu_r", 5)
     fig = plt.figure(figsize=(8, 4), dpi=200)
     ax = plt.subplot(111)
@@ -839,7 +840,7 @@ def plot_chart_5(from_d="2018-01-01", language="en"):
         construction = 'Construction'
         civil = 'Civil engineering constructions'
         buildings = 'Buildings'
-        specialty = 'Specialty trade contractors'
+        specialty = 'Specialty manufacturing contractors'
         unit = 'Millions of MXN'
     else:
         construction = 'Construcción'
@@ -867,8 +868,8 @@ def plot_chart_5(from_d="2018-01-01", language="en"):
     ax.legend((p1[0], p2[0], p3[0]), (buildings, civil, specialty),loc="lower center", bbox_to_anchor=(0.5, 1), ncol=3)
 
     plt.ylabel(unit)
-    ax.xaxis.set_major_locator(mdates.YearLocator(2))
-    ax.xaxis.set_minor_locator(mdates.YearLocator(1))
+    ax.xaxis.set_major_locator(mdates.YearLocator(1))
+    # ax.xaxis.set_minor_locator(mdates.YearLocator(1))
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
 
     # fig.text(
@@ -1115,11 +1116,119 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
 # %%    
 # ------------------------------------------------------------------
 #
-# CHART 8: BUSINESSES CONFIDENCE - BARS
+# CHART 8: BUSINESS CONFIDENCE - BARS
 #
 # ------------------------------------------------------------------
 
+def plot_chart_8(from_d="2013-01-01", language="en"):
+    plot_data = get_emoe_data(from_d,language)
+    economic_activities = plot_data['economic_activity'].unique().tolist()
+    ice_prev_mont = []
+    for activity in economic_activities:
+        aux_df = plot_data[plot_data['economic_activity']==activity]
+        ice_prev_mont.append(aux_df['ice'].iloc[-2])
+    
+    plot_data = plot_data[plot_data['date'].dt.month == plot_data['date'].max().month].reset_index(drop=True)
+    plot_data.drop(columns='economic_activity__ref', inplace=True)
+    
+    plot_data = plot_data.pivot(index='date',columns='economic_activity', values='ice')
+    
+    if language == "es":
+        plot_data.rename(columns={'Industrias manufactureras':'Manufactura'},inplace=True)
+    plot_data.reset_index(inplace=True)
+    
+    # Plot
+    cmap = mpl.cm.get_cmap("GnBu_r", 5)
+    fig = plt.figure(figsize=(8, 4), dpi=200)
+    ax = plt.subplot(111)
+    
+    index_ticks = np.arange(plot_data['date'].shape[0])
+    width = 0.3
+    
+    X_max = plot_data["date"].iloc[-1]
+    
+    if language =="en":
+        trade = "Trade"
+        construction = "Construction"
+        manufacturing = "Manufacturing"
+        source_text = f"Showing {X_max.strftime('%B')} data for each year"
 
+    else:
+        trade = "Comercio"
+        construction = "Construcción"
+        manufacturing = "Manufactura"
+        source_text = f"Se muestran los datos de {X_max.strftime('%B')} para cada año."
+
+    last_construction = plot_data[construction].iloc[-1]
+    second_last_construction = plot_data[construction].iloc[-2]
+    last_manufacturing = plot_data[manufacturing].iloc[-1]
+    second_last_manufacturing = plot_data[manufacturing].iloc[-2]
+    last_trade = plot_data[trade].iloc[-1]
+    second_last_trade = plot_data[trade].iloc[-2]
+    yoy_construction_diff = last_construction - second_last_construction
+    yoy_construction_var = (last_construction / second_last_construction)-1
+    yoy_manufacturing_diff = last_manufacturing - second_last_manufacturing
+    yoy_manufacturing_var = (last_manufacturing / second_last_manufacturing)-1
+    yoy_trade_diff = last_trade - second_last_trade
+    yoy_trade_var = (last_trade / second_last_trade)-1
+    mom_construction_diff = last_construction - ice_prev_mont[1]
+    mom_construction_var = (last_construction / ice_prev_mont[1])-1
+    mom_manufacturing_diff = last_manufacturing - ice_prev_mont[2]
+    mom_manufacturing_var = (last_manufacturing / ice_prev_mont[2])-1
+    mom_trade_diff = last_trade - ice_prev_mont[0]
+    mom_trade_var = (last_trade / ice_prev_mont[0])-1
+    
+    ax.bar(index_ticks, plot_data[trade], color=cmap(
+    0), width=width, zorder=3, label=trade)
+    ax.bar(index_ticks + width, plot_data[construction],
+        color=cmap(1), width=width, zorder=3, label=construction)
+    ax.bar(index_ticks + 2*width, plot_data[manufacturing],
+    color=cmap(2), width=width, zorder=3, label=manufacturing)
+    
+    ax.set_xticks(index_ticks + width / 3, labels=plot_data["date"].dt.strftime("%b-%y"))
+
+    ax.set_ylim(0)
+    
+    # fig.text(0.13, 0.0, source_text, fontsize=9)
+
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1), ncol=3)
+
+    ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0f}"))
+
+    # fig.text(
+    #     0.1,
+    #     1,
+    #     "Business Confidence",
+    #     size=14,
+    #     weight = "bold"
+    # )
+
+    if language == "en":
+        plt.savefig(
+        "plots/business_confidence.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )
+    else:
+        plt.savefig(
+        "plots/es_business_confidence.png",
+        dpi=200,
+        bbox_inches="tight",
+        facecolor="white",
+        edgecolor="none",
+        transparent=False,
+    )
+
+    # # ---
+    if language == "en":
+        print(f"During {X_max.strftime('%b-%Y')}, the YoY change in the Business Confidence Indicator was {yoy_trade_diff:.1f} points ({yoy_trade_var:.1%}) for {economic_activities[0]},{yoy_construction_diff:.1f} points ({yoy_construction_var:.1%}) for {economic_activities[1]}, and {yoy_manufacturing_diff:.1f} points ({yoy_manufacturing_var:.1%}) for {economic_activities[2]} companies.\nThe MoM change was {mom_trade_diff:.1f} points ({mom_trade_var:.1%}) for {economic_activities[0]}, {mom_construction_diff:.1f} points ({mom_construction_var:.1%}) for {economic_activities[1]}, and {mom_manufacturing_diff:.1f} points ({mom_manufacturing_var:.1%}) for {economic_activities[2]} companies.")
+        
+
+    else:
+        print(f"En {X_max.strftime('%b-%Y')}, la variación YoY en el Indicador de Confianza Emmpresarial fue de {yoy_trade_diff:.1f} points ({yoy_trade_var:.1%}) para las actividades de {economic_activities[0]},{yoy_construction_diff:.1f} puntos ({yoy_construction_var:.1%}) para las de {economic_activities[1]}, y {yoy_manufacturing_diff:.1f} puntos ({yoy_manufacturing_var:.1%}) para {economic_activities[2]}.\nLa variación MoM fue de {mom_trade_diff:.1f} puntos ({mom_trade_var:.1%}) para las actividades de {economic_activities[0]}, de {mom_construction_diff:.1f} puntos ({mom_construction_var:.1%}) para las de {economic_activities[1]} y de {mom_manufacturing_diff:.1f} puntos ({mom_manufacturing_var:.1%}) para {economic_activities[2]}.")
 
 # %%    
 # ------------------------------------------------------------------
@@ -1156,9 +1265,9 @@ def plot_chart_9(from_d="2013-01-01", language="en"):
     icc_mom_var = (icc_last / icc_prev_month) -1
         
     if language =='en':
-        source_text = f"Showing {X_max.strftime('%b')} data for each year"
+        source_text = f"Showing {X_max.strftime('%B')} data for each year"
     else:
-        source_text = f"Se muestran los datos de {X_max.strftime('%b')} para cada año."
+        source_text = f"Se muestran los datos de {X_max.strftime('%B')} para cada año."
 
     
     fig.text(0.13, 0.0, source_text, fontsize=9)
