@@ -1174,8 +1174,10 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_8(from_d="2013-01-01", language="en"):
+def plot_chart_8(from_d="2013-01-01", language="en", previous_month =False):
     plot_data = get_emoe_data(from_d,language)
+    if previous_month == True:
+        plot_data = plot_data[plot_data['date']<=plot_data['date'].iloc[-4]]
     economic_activities = plot_data['economic_activity'].unique().tolist()
     ice_prev_mont = []
     for activity in economic_activities:
@@ -1278,7 +1280,7 @@ def plot_chart_8(from_d="2013-01-01", language="en"):
 
     # # ---
     if language == "en":
-        print(f"During {X_max.strftime('%b-%Y')}, the YoY change in the Business Confidence Indicator was {yoy_trade_diff:.1f} points ({yoy_trade_var:.1%}) for {economic_activities[0]},{yoy_construction_diff:.1f} points ({yoy_construction_var:.1%}) for {economic_activities[1]}, and {yoy_manufacturing_diff:.1f} points ({yoy_manufacturing_var:.1%}) for {economic_activities[2]} companies.\nThe MoM change was {mom_trade_diff:.1f} points ({mom_trade_var:.1%}) for {economic_activities[0]}, {mom_construction_diff:.1f} points ({mom_construction_var:.1%}) for {economic_activities[1]}, and {mom_manufacturing_diff:.1f} points ({mom_manufacturing_var:.1%}) for {economic_activities[2]} companies.")
+        print(f"During {X_max.strftime('%b-%Y')}, the YoY change in the Business Confidence Indicator (ICE) for {economic_activities[0]} companies was {yoy_trade_diff:.1f} points ({yoy_trade_var:.1%}),{yoy_construction_diff:.1f} points ({yoy_construction_var:.1%}) for {economic_activities[1]}, and {yoy_manufacturing_diff:.1f} points ({yoy_manufacturing_var:.1%}) for {economic_activities[2]} companies.\nThe MoM change was {mom_trade_diff:.1f} points ({mom_trade_var:.1%}, {mom_construction_diff:.1f} points ({mom_construction_var:.1%}), and {mom_manufacturing_diff:.1f} points ({mom_manufacturing_var:.1%}) for {economic_activities[0]}, {economic_activities[1]} and {economic_activities[2]} companies, respectively.") 
         
 
     else:
@@ -1290,8 +1292,10 @@ def plot_chart_8(from_d="2013-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_9(from_d="2013-01-01", language="en"):
+def plot_chart_9(from_d="2013-01-01", language="en", previous_month =False):
     plot_data = get_enco_data(from_d, language)
+    if previous_month == True:
+        plot_data = plot_data[plot_data['date']<=plot_data['date'].iloc[-2]]
     icc_prev_month = plot_data['icc'].iloc[-2]
     plot_data = plot_data[plot_data['date'].dt.month == plot_data['date'].max().month].reset_index(drop=True)
     
