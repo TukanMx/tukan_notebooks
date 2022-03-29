@@ -239,6 +239,9 @@ def get_enec_data(from_d="2000-01-01", language="en"):
 
     response = get_tukan_api_request(payload)
     data = response["data"]
+    data = data.rename(columns={"e721ea412d5cbc1":"production_value"})
+    data['production_value'] = data['production_value'] / 1000000
+    data.reset_index(inplace=True, drop=True)
     return data
 
 def get_labour_enec_data(from_d="2000-01-01", language="en"):
@@ -506,12 +509,12 @@ def benchmark_deflate_inpc(df, id="column_name", base_date = "2018-11-01"):
     # delete var def_val 
     return(final_df)
 
-def deflate_inpp_construction(df, id="column_names", base_date="2013-01-01"):
+def deflate_inpp_construction(df, id="column_names", base_date="2013-08-01"):
     deflate = get_inpp_construction_data(from_d="2000-01-01", language="en")
     def_base = deflate[deflate['date']==base_date]
     def_val = def_base.iloc[-1][1]
-    deflate['def_val'] = deflate['inpp'] / def_val
-    deflate = deflate[['date','def_val']].iloc[:]
+    deflate['def_val'] = (deflate['inpp'] / def_val)
+    deflate = deflate[['date','def_val']]
     deflate.dropna(inplace=True)
     deflate.reset_index(inplace=True,drop=True)
     final_df = df.merge(deflate, how='left', on='date')
@@ -613,7 +616,7 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_2(from_d="2020-11-01", language="en"):
+def plot_chart_2(from_d="2021-01-01", language="en"):
     
     data = get_igae_data(from_d, language)
     plot_data = data[data['economic_activity__ref']!='dfeefc621d16d0c'].copy()
@@ -888,9 +891,6 @@ def plot_chart_4(from_d="2016-01-01", language="en"):
 
 def plot_chart_5(from_d="2013-01-01", language="en"):
     data = get_enec_data(from_d, language)
-    data = data.rename(columns={"e721ea412d5cbc1":"production_value"})
-    data['production_value'] = data['production_value'] / 1000000
-    data.reset_index(inplace=True, drop=True)
     data = data.pivot(index='date', columns='economic_activity__ref')['production_value']
     data.reset_index(inplace=True)
     if language =='en':
