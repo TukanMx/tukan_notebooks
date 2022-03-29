@@ -509,21 +509,22 @@ def benchmark_deflate_inpc(df, id="column_name", base_date = "2018-11-01"):
     # delete var def_val 
     return(final_df)
 
-def deflate_inpp_construction(df, id="column_names", base_date="2013-08-01"):
+def deflate_inpp_construction(df, id="column_names", base_date="2013-07-01"):
     deflate = get_inpp_construction_data(from_d="2000-01-01", language="en")
     def_base = deflate[deflate['date']==base_date]
     def_val = def_base.iloc[-1][1]
+    #
     deflate['def_val'] = (deflate['inpp'] / def_val)
     deflate = deflate[['date','def_val']]
     deflate.dropna(inplace=True)
     deflate.reset_index(inplace=True,drop=True)
+    #
     final_df = df.merge(deflate, how='left', on='date')
     for column in id:
         newcol_name = 'deflated_'+str(column)
         final_df[newcol_name] = final_df[column] / final_df['def_val']
     
-    final_df.drop(columns='def_val',inplace=True)
-    
+    # final_df.drop(columns='def_val',inplace=True)
     return(final_df)
 
     
@@ -906,7 +907,7 @@ def plot_chart_5(from_d="2013-01-01", language="en"):
         specialty = 'Trabajos especializados'
         unit = 'Millones de MXN'
     data.rename(columns={'14edc470d8f3e2f':civil,'222bc7bc27c6906':specialty,'4382bc56abc3b3b':buildings,'457155464609a2f':construction}, inplace=True)
-    plot_data = deflate_inpp_construction(data, id=[construction,civil,buildings,specialty], base_date="2013-01-01")
+    plot_data = deflate_inpp_construction(data, id=[construction,civil,buildings,specialty], base_date="2013-07-01")
     
     mom_var = (plot_data[f"deflated_{construction}"].iloc[-1] / plot_data[f"deflated_{construction}"].iloc[-2])-1
     yoy_var = (plot_data[f"deflated_{construction}"].iloc[-1] / plot_data[f"deflated_{construction}"].iloc[-13])-1
