@@ -681,7 +681,7 @@ def plot_chart_2(from_d="2021-01-01", language="en"):
     ax.hlines(0, X_min-.13, X_max+.4, ls = "-", color = "black", lw = 0.75, zorder=3)
 
     ax.set_xticks(index_ticks + width / 3,
-                  labels=plot_data["date"].dt.strftime("%b-%y"), rotation=90)
+                  labels=plot_data["date"].dt.strftime("%b-%y"), rotation=45)
 
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
     # ax.set_ylim(0)
@@ -1072,9 +1072,9 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
     
     mom_data = get_ems_data(from_d, language, operation ="last_growth_rel")
     
-    top_mom = mom_data[mom_data['date'] == mom_data['date'].max()].sort_values(by="income", ascending=False).reset_index(drop=True).head(10)
+    top_mom = mom_data[mom_data['date'] == mom_data['date'].max()].sort_values(by="income", ascending=False).reset_index(drop=True).head(5)
     top_mom = top_mom.sort_values(by="income").reset_index(drop=True)
-    top_yoy = yoy_data[yoy_data['date'] == yoy_data['date'].max()].sort_values(by="income", ascending=False).reset_index(drop=True).head(10)
+    top_yoy = yoy_data[yoy_data['date'] == yoy_data['date'].max()].sort_values(by="income", ascending=False).reset_index(drop=True).head(5)
     top_yoy = top_yoy.sort_values(by="income").reset_index(drop=True)
     if language == "en":
         top_yoy = top_yoy.replace({'Other services (except public administration)':'Other services','Governmental, legislative activities of law enforcement and international and extraterritorial bodies':'Governmental and legislative services','Administrative and support and waste management and remediation services':'Administrative and waste management services', 'Information':'Media'})
@@ -1100,6 +1100,16 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
     ax2.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0%}"))
     ax1.title.set_text('YoY')
     ax2.title.set_text('MoM')
+    
+    max_yoy = abs(top_yoy['income']).max()
+    min_yoy = top_yoy['income'].min()
+    max_mom = abs(top_mom['income']).max()
+    min_mom = top_mom['income'].min()
+    
+    if min_yoy<0:
+        ax1.set_xlim(-max_yoy, max_yoy)
+    if min_mom<0:
+        ax2.set_xlim(-max_mom, max_mom) 
     
     yoy_first_act_name =top_yoy["economic_activity"].iloc[-1]
     yoy_second_act_name =top_yoy["economic_activity"].iloc[-2]
