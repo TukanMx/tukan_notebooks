@@ -588,7 +588,7 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
     # )
     if language == "en":
         plt.savefig(
-        "plots/yoy_igae_change.png",
+        "plots/yoy_igae_change.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -597,7 +597,7 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
     )
     else:
         plt.savefig(
-        "plots/es_yoy_igae_change.png",
+        "plots/es_yoy_igae_change.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -701,7 +701,7 @@ def plot_chart_2(from_d="2021-01-01", language="en"):
 
     if language == "en":
         plt.savefig(
-        "plots/yoy_sector_change.png",
+        "plots/yoy_sector_change.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -710,7 +710,7 @@ def plot_chart_2(from_d="2021-01-01", language="en"):
     )
     else:
         plt.savefig(
-        "plots/es_yoy_sector_change.png",
+        "plots/es_yoy_sector_change.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -781,7 +781,7 @@ def plot_chart_3(from_d="2016-01-01", language="en"):
 
     if language == "en":
         plt.savefig(
-        "plots/yoy_activities_change.png",
+        "plots/yoy_activities_change.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -790,7 +790,7 @@ def plot_chart_3(from_d="2016-01-01", language="en"):
     )
     else:
         plt.savefig(
-        "plots/es_yoy_activities_change.png",
+        "plots/es_yoy_activities_change.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -861,7 +861,7 @@ def plot_chart_4(from_d="2016-01-01", language="en"):
 
     if language == "en":
         plt.savefig(
-        "plots/mom_activities_change.png",
+        "plots/mom_activities_change.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -870,7 +870,7 @@ def plot_chart_4(from_d="2016-01-01", language="en"):
     )
     else:
         plt.savefig(
-        "plots/es_mom_activities_change.png",
+        "plots/es_mom_activities_change.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -940,7 +940,7 @@ def plot_chart_5(from_d="2013-01-01", language="en"):
     # )
     if language == "en":
         plt.savefig(
-        "plots/construction_value.png",
+        "plots/construction_value.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -949,7 +949,7 @@ def plot_chart_5(from_d="2013-01-01", language="en"):
     )
     else:
         plt.savefig(
-        "plots/es_construction_value.png",
+        "plots/es_construction_value.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -1039,7 +1039,7 @@ def plot_chart_6(from_d="2013-01-01", language="en"):
     # )
     if language == "en":
         plt.savefig(
-        "plots/manufacturing.png",
+        "plots/manufacturing.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -1048,7 +1048,7 @@ def plot_chart_6(from_d="2013-01-01", language="en"):
     )
     else:
         plt.savefig(
-        "plots/es_manufacturing.png",
+        "plots/es_manufacturing.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -1137,7 +1137,7 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
     # )
     if language == "en":
         plt.savefig(
-        "plots/services.png",
+        "plots/services.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -1146,7 +1146,7 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
     )
     else:
         plt.savefig(
-        "plots/es_services.png",
+        "plots/es_services.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -1253,7 +1253,7 @@ def plot_chart_8(from_d="2013-01-01", language="en", previous_month =False):
 
     if language == "en":
         plt.savefig(
-        "plots/business_confidence.png",
+        "plots/business_confidence.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -1262,7 +1262,7 @@ def plot_chart_8(from_d="2013-01-01", language="en", previous_month =False):
     )
     else:
         plt.savefig(
-        "plots/es_business_confidence.png",
+        "plots/es_business_confidence.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -1330,7 +1330,7 @@ def plot_chart_9(from_d="2013-01-01", language="en", previous_month =False):
     # )
     if language == "en":
         plt.savefig(
-        "plots/consumer_confidence.png",
+        "plots/consumer_confidence.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
@@ -1339,7 +1339,7 @@ def plot_chart_9(from_d="2013-01-01", language="en", previous_month =False):
     )
     else:
         plt.savefig(
-        "plots/es_consumer_confidence.png",
+        "plots/es_consumer_confidence.svg",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
