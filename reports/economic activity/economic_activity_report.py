@@ -536,6 +536,7 @@ def deflate_inpp_construction(df, id="column_names", base_date="2013-07-01"):
 # ax = plt.subplot(111)
 # ax.plot(aux_df["date"], aux_df["production_value"],marker="o", ms=6, mec="white", markevery=[-1], color=cmap(0))
 # ax.plot(aux_df["date"], aux_df["deflated_production_value"],marker="x", ms=6, mec="white", markevery=[-1], color=cmap(2))
+
 # %%
 # ------------------------------------------------------------------
 #
@@ -549,7 +550,7 @@ def deflate_inpp_construction(df, id="column_names", base_date="2013-07-01"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_1(from_d="2000-01-01", language="en"):
+def plot_chart_1(from_d="2000-01-01", language="en", img_format="png", transparency = False):
     
     plot_data = get_igae_data(from_d, language)
     plot_data = plot_data[plot_data['economic_activity__ref']=='dfeefc621d16d0c']
@@ -588,21 +589,21 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
     # )
     if language == "en":
         plt.savefig(
-        "plots/yoy_igae_change.svg",
+        f"plots/yoy_igae_change.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
     else:
         plt.savefig(
-        "plots/es_yoy_igae_change.svg",
+        f"plots/es_yoy_igae_change.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )  
 
     # ---
@@ -617,7 +618,7 @@ def plot_chart_1(from_d="2000-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_2(from_d="2021-01-01", language="en"):
+def plot_chart_2(from_d="2021-01-01", language="en", img_format="png", transparency = False):
     
     data = get_igae_data(from_d, language)
     plot_data = data[data['economic_activity__ref']!='dfeefc621d16d0c'].copy()
@@ -701,21 +702,21 @@ def plot_chart_2(from_d="2021-01-01", language="en"):
 
     if language == "en":
         plt.savefig(
-        "plots/yoy_sector_change.svg",
+        f"plots/yoy_sector_change.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
     else:
         plt.savefig(
-        "plots/es_yoy_sector_change.svg",
+        f"plots/es_yoy_sector_change.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
 
     # # ---
@@ -730,7 +731,7 @@ def plot_chart_2(from_d="2021-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_3(from_d="2016-01-01", language="en"):
+def plot_chart_3(from_d="2016-01-01", language="en", img_format="png", transparency = False):
     plot_data = get_activities_data(from_d, language)
     plot_data = plot_data[plot_data['date'] == plot_data['date'].max()].sort_values(by="yoy_igae", ascending=True).reset_index(drop=True)
     if language == "en":
@@ -781,21 +782,21 @@ def plot_chart_3(from_d="2016-01-01", language="en"):
 
     if language == "en":
         plt.savefig(
-        "plots/yoy_activities_change.svg",
+        f"plots/yoy_activities_change.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
     else:
         plt.savefig(
-        "plots/es_yoy_activities_change.svg",
+        f"plots/es_yoy_activities_change.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
 
     # # ---
@@ -810,7 +811,7 @@ def plot_chart_3(from_d="2016-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_4(from_d="2016-01-01", language="en"):
+def plot_chart_4(from_d="2016-01-01", language="en", img_format="png", transparency = False):
     plot_data = get_activities_data(from_d, language)
     plot_data = plot_data[plot_data['date'] == plot_data['date'].max()].sort_values(by="mom_igae", ascending=True).reset_index(drop=True)
     if language == "en":
@@ -861,21 +862,21 @@ def plot_chart_4(from_d="2016-01-01", language="en"):
 
     if language == "en":
         plt.savefig(
-        "plots/mom_activities_change.svg",
+        f"plots/mom_activities_change.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
     else:
         plt.savefig(
-        "plots/es_mom_activities_change.svg",
+        f"plots/es_mom_activities_change.{img_format}",
         dpi=200,
         bbox_inches="tight",
         facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
 
     # # ---
@@ -890,7 +891,7 @@ def plot_chart_4(from_d="2016-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_5(from_d="2013-01-01", language="en"):
+def plot_chart_5(from_d="2013-01-01", language="en", img_format="png", transparency = False):
     data = get_enec_data(from_d, language)
     data = data.pivot(index='date', columns='economic_activity__ref')['production_value']
     data.reset_index(inplace=True)
@@ -940,21 +941,21 @@ def plot_chart_5(from_d="2013-01-01", language="en"):
     # )
     if language == "en":
         plt.savefig(
-        "plots/construction_value.svg",
+        f"plots/construction_value.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
     else:
         plt.savefig(
-        "plots/es_construction_value.svg",
+        f"plots/es_construction_value.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )  
 
     # # ---
@@ -996,7 +997,7 @@ def plot_chart_5(from_d="2013-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_6(from_d="2013-01-01", language="en"):
+def plot_chart_6(from_d="2013-01-01", language="en", img_format="png", transparency = False):
     agg_data = get_emim_data(from_d, language, activities=False)
         
     # Aggregated data
@@ -1039,21 +1040,21 @@ def plot_chart_6(from_d="2013-01-01", language="en"):
     # )
     if language == "en":
         plt.savefig(
-        "plots/manufacturing.svg",
+        f"plots/manufacturing.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
     else:
         plt.savefig(
-        "plots/es_manufacturing.svg",
+        f"plots/es_manufacturing.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )  
     
     if language =='en':
@@ -1067,7 +1068,7 @@ def plot_chart_6(from_d="2013-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_7(from_d="2013-01-01", language="en"):
+def plot_chart_7(from_d="2013-01-01", language="en", img_format="png", transparency = False):
     yoy_data = get_ems_data(from_d, language, operation ="yoy_growth_rel")
     
     mom_data = get_ems_data(from_d, language, operation ="last_growth_rel")
@@ -1137,21 +1138,21 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
     # )
     if language == "en":
         plt.savefig(
-        "plots/services.svg",
+        f"plots/services.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
     else:
         plt.savefig(
-        "plots/es_services.svg",
+        f"plots/es_services.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )  
     
     if language =='en':
@@ -1166,7 +1167,7 @@ def plot_chart_7(from_d="2013-01-01", language="en"):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_8(from_d="2013-01-01", language="en", previous_month =False):
+def plot_chart_8(from_d="2013-01-01", language="en", previous_month =False, img_format="png", transparency = False):
     plot_data = get_emoe_data(from_d,language)
     if previous_month == True:
         plot_data = plot_data[plot_data['date']<=plot_data['date'].iloc[-4]]
@@ -1253,21 +1254,21 @@ def plot_chart_8(from_d="2013-01-01", language="en", previous_month =False):
 
     if language == "en":
         plt.savefig(
-        "plots/business_confidence.svg",
+        f"plots/business_confidence.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
     else:
         plt.savefig(
-        "plots/es_business_confidence.svg",
+        f"plots/es_business_confidence.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
 
     # # ---
@@ -1284,7 +1285,7 @@ def plot_chart_8(from_d="2013-01-01", language="en", previous_month =False):
 #
 # ------------------------------------------------------------------
 
-def plot_chart_9(from_d="2013-01-01", language="en", previous_month =False):
+def plot_chart_9(from_d="2013-01-01", language="en", previous_month =False, img_format="png", transparency = False):
     plot_data = get_enco_data(from_d, language)
     if previous_month == True:
         plot_data = plot_data[plot_data['date']<=plot_data['date'].iloc[-2]]
@@ -1330,21 +1331,21 @@ def plot_chart_9(from_d="2013-01-01", language="en", previous_month =False):
     # )
     if language == "en":
         plt.savefig(
-        "plots/consumer_confidence.svg",
+        f"plots/consumer_confidence.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )
     else:
         plt.savefig(
-        "plots/es_consumer_confidence.svg",
+        f"plots/es_consumer_confidence.{img_format}",
         dpi=200,
         bbox_inches="tight",
-        facecolor="white",
+        # facecolor="white",
         edgecolor="none",
-        transparent=False,
+        transparent=transparency,
     )  
 
     # # ---
