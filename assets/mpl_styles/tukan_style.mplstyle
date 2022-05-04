@@ -1,0 +1,30 @@
+# TUKAN Matplotlib style
+
+#### FONTS
+
+font.family: Karla
+xtick.labelsize: 8
+ytick.labelsize: 8
+
+#### FIGURE SIZE
+
+figure.figsize: 7.5, 3.25
+
+axes.prop_cycle: cycler(color=['084081', '67c1cb', 'b4e2ba', '2384ba'])
+axes.spines.top: False
+axes.spines.right: False
+axes.spines.left: False
+
+ytick.color: 7D94A1
+xtick.color: 7D94A1
+axes.edgecolor: 7D94A1
+
+legend.fontsize: 8
+legend.frameon: False
+text.color: 4E616C
+
+
+axes.grid: True
+grid.color: dddddd
+grid.linestyle: --
+lines.linewidth: 1.25

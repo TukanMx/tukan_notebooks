@@ -303,8 +303,8 @@ def plot_chart_2(from_d="2019-01-01"):
     ax.bar(index_ticks + width, plot_df["yoy_non_under"],
            color=cmap(1), width=width, zorder=3, label="Non-core inflation")
 
-    ax.set_xticks(index_ticks + width / 2,
-                  labels=plot_df["date"].dt.strftime("%b-%y"), rotation=90)
+    ax.set_xticks(index_ticks + width / 2)
+    ax.set_xticklabels(plot_df["date"].dt.strftime("%b-%y"), rotation=90)
 
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:.0%}"))
     ax.set_ylim(0)
@@ -945,8 +945,8 @@ def plot_chart_6(from_d="2012-01-01"):
        'Governmental, legislative activities of law enforcement and international and extraterritorial bodies':'Governmental activities',
        'Educational services':'Educational services', 'Transportation and warehousing':'Transportation & warehousing'}, inplace=True)
     
-    data = data[(data['economic_activity'] != 'Waste Management')]
-    data = data[(data['economic_activity'] != 'Governmental activities')]
+    # data = data[(data['economic_activity'] != 'Waste Management')]
+    # data = data[(data['economic_activity'] != 'Governmental activities')]
 
     sort_data = data[data["date"] == data["date"].max()].sort_values(by = "c572db59b8cd109", ascending = False)
     cmap = mpl.cm.get_cmap(
@@ -1277,3 +1277,5 @@ def plot_chart_9(from_d="2012-01-01"):
         edgecolor="none",
         transparent=False,
     )
+
+# response.cookies["TS01c32642"] == response_2.cookies["TS01c32642"]
