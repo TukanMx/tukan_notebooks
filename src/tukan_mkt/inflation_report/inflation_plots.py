@@ -27,7 +27,7 @@ def map_tukan_inegi_products(from_d="2019-01-01"):
 
     # Map to match INEGI classifications
     tukan_inegi_map = pd.read_csv(
-        r"C:\Users\MiguelAngel\Documents\Miguel\TUKAN\tukan_notebooks\assets\maps\product_mapping_inegi.csv", 
+        r"C:\Users\migue\Documents\TUKAN\tukan_notebooks\assets\maps\product_mapping_inegi.csv", 
         encoding="utf-8")
     tukan_inegi_map.drop(["weight"], axis=1, inplace=True)
 
@@ -791,9 +791,9 @@ def mex_primary_activity_inflation(f, from_d = "2012-01-01"):
         ax.plot(plot_data_aux["date"], plot_data_aux["c572db59b8cd109"], marker = "o", markevery = [-1], color = cmap(index), mec = "white", ms = 5)
         Y_end = plot_data_aux["c572db59b8cd109"].iloc[-1]
         if activity == "Crop production":
-            Y_end = Y_end + 0.04
+            Y_end = Y_end
         elif activity == "Fishing & hunting":
-            Y_end = Y_end + 0.01
+            Y_end = Y_end + 0.05
         ax_text(x=X_max + datetime.timedelta(20), y = Y_end,
                 s=f"<{activity}>",
                 highlight_textprops=[{"color": cmap(index)}],

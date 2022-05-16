@@ -1,10 +1,10 @@
 '''
-Construction Monitor Functions.
+Economic Activity Monitor Functions.
 ----------------------------------------------
 Main Author: Miguel Angel Dávila
 
 This script contains function that generate our TUKAN 
-Mexican Construction Monitor report.
+Mexican Economic Activity Monitor report.
 '''
 
 from tukan_mkt.helpers import get_tukan_api_request
